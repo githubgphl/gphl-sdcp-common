@@ -1,0 +1,10 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Aux
+Bundle-SymbolicName: com.globalphasing.sdcp.common
+Bundle-Version: 1.0.0.qualifier
+Export-Package: co.gphl.common.io.logging,
+ co.gphl.common.io.streams,
+ co.gphl.common.namelist,
+ co.gphl.common.namelist.impl,
+ co.gphl.common.threads
