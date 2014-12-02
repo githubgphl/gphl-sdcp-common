@@ -30,7 +30,7 @@ import co.gphl.common.namelist.F90NamelistGroupFactory;
  *   </li>
  *   <li>Producing namelist group types that extend the capabilities of
  *   {@link F90NamelistGroupImpl} instances. The delegate factory should produce
- *   {@link f90NamelistGroupWrapper} instances.
+ *   {@link F90NamelistGroupWrapper} instances.
  *   </li>
  * </ul>
  * 
