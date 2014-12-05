@@ -3,9 +3,6 @@
 package co.gphl.sdcp.F90Namelist.v2;
 
 import java.io.Serializable;
-import java.util.HashMap;
-
-import co.gphl.common.namelist.F90NamelistGroup;
 import co.gphl.common.namelist.F90NamelistGroupFactory;
 import co.gphl.common.namelist.impl.F90NamelistGroupFactoryImpl;
 import co.gphl.sdcp.F90NamelistGroup.v2.impl.*;
@@ -19,9 +16,7 @@ public final class GcalAuxGroupFactory
     
     private GcalAuxGroupFactory() {
         super(null);
-        
-        this.groupMap = new HashMap<String, Class<? extends F90NamelistGroup>>();
-        
+                
         this.groupMap.put("BEAMSTOP_SETTING_LIST",          BeamstopSettingGroup.class);
         this.groupMap.put("CENTRED_GONIOSTAT_SETTING_LIST", CentredGoniostatSettingGroup.class);
         this.groupMap.put("DETECTOR_LIST",                  DetectorGroup.class);

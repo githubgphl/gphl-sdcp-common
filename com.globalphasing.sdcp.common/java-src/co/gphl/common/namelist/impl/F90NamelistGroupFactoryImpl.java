@@ -16,6 +16,7 @@ package co.gphl.common.namelist.impl;
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.HashMap;
 import java.util.Map;
 
 import co.gphl.common.namelist.F90NamelistGroup;
@@ -41,9 +42,10 @@ public abstract class F90NamelistGroupFactoryImpl
     // FIXME! Won't need to be serializable for ever.....
     implements F90NamelistGroupFactory, Serializable {
 
-    protected F90NamelistGroupFactory delegate = null;
+    protected final F90NamelistGroupFactory delegate;
 
-    protected Map<String, Class<? extends F90NamelistGroup>> groupMap = null;
+    protected final Map<String, Class<? extends F90NamelistGroup>> groupMap
+        = new HashMap<String, Class<? extends F90NamelistGroup>>();
     
     private static Class<?>[] integerArray = { Integer.class };
     
