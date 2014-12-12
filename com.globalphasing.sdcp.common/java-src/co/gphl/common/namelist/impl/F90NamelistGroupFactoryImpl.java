@@ -82,6 +82,7 @@ public abstract class F90NamelistGroupFactoryImpl
             //   actual argument for this case).
             
             Class<? extends F90NamelistGroup> type = this.groupMap.get(ucGroupName);
+            Class<?> argClass = null;
             try {
                 
                 Constructor<? extends F90NamelistGroup> cons;
@@ -90,13 +91,15 @@ public abstract class F90NamelistGroupFactoryImpl
                     if ( lineNo == null )
                         return type.newInstance();
                     else {
+                        argClass = Integer.class;
                         cons = type.getConstructor(F90NamelistGroupFactoryImpl.integerArray);
                         return cons.newInstance( new Object[] { lineNo } );
                     }
                 }
                 else if ( F90NamelistGroupWrapper.class.isAssignableFrom(type) ) {
                     F90NamelistGroup baseGroup = this.delegate.newInstance(ucGroupName, throwException, lineNo);
-                    cons = type.getConstructor(new Class<?>[] { baseGroup.getClass() } );
+                    argClass = baseGroup.getClass();
+                    cons = type.getConstructor(new Class<?>[] { argClass } );
                     return cons.newInstance( new Object[] {baseGroup} );
                 }
                 else
@@ -112,7 +115,7 @@ public abstract class F90NamelistGroupFactoryImpl
                             " or its constructor is not accessible", e );
             } catch (NoSuchMethodException e) {
                 throw new RuntimeException("BUG: Could not find constructor for " + type.getName() +
-                        " taking a single Integer argument", e);
+                        " taking a single " + ( argClass == null ? "unknown" : argClass.getSimpleName() )  + " argument", e);
             } catch (SecurityException e) {
                 throw new RuntimeException("Security manager problem with " + type.getName(), e );
             } catch (IllegalArgumentException e) {
