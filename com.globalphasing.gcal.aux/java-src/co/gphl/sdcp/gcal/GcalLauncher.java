@@ -325,4 +325,8 @@ public abstract class GcalLauncher implements Serializable {
         
     }
     
+    public String getPropNamePrefix() {
+        return this.propNamePrefix;
+    }
+    
 }

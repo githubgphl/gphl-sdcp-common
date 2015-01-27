@@ -38,9 +38,19 @@ public class SimcalLauncher extends GcalLauncher implements Serializable {
      */
     public static final String MEMPOOL = "memory_pool";
     
+    /**
+     * Property used to enable and set {@code --hkl-scale} command-line option
+     */
+    public static final String HKLSCALE = "hklscale";
+    
+    // Define these property names here to avoid scattering them around too much,
+    // but client classes must use them because they need to be set in the namelist
+    // input before we get here.
+    public static final String NRAYS = "nrays";
+    public static final String BKGND = "background";
+    
     private static Map<String, String> propNames = null;
     private File hkli;
-    private Double hklscale;
     
     public SimcalLauncher(String propNameNamespace) {
         this(propNameNamespace, null);
@@ -50,9 +60,8 @@ public class SimcalLauncher extends GcalLauncher implements Serializable {
         super(SimcalLauncher.logger, "simcal", propNameNamespace, properties);
     }
     
-    public void setHkli(File hkli, Double hklscale) {
+    public void setHkli(File hkli) {
         this.hkli = hkli;
-        this.hklscale = hklscale;
     }
     
     @Override
@@ -60,8 +69,6 @@ public class SimcalLauncher extends GcalLauncher implements Serializable {
         super._pre_launch(wdir, input);
         if ( this.hkli != null )
             this.args.put("--hkl", this.hkli.toString());
-        if ( this.hklscale != null )
-            this.args.put("--hkl-scale", Double.toString(this.hklscale));
     }
     
     @Override
@@ -70,6 +77,7 @@ public class SimcalLauncher extends GcalLauncher implements Serializable {
         if ( SimcalLauncher.propNames == null ) {
             SimcalLauncher.propNames = new HashMap<String, String>(super.getPropNames());
             propNames.put(SimcalLauncher.MEMPOOL, "--memory-pool");
+            propNames.put(SimcalLauncher.HKLSCALE, "--hkl-scale");
         }
         
         return Collections.unmodifiableMap(SimcalLauncher.propNames);
