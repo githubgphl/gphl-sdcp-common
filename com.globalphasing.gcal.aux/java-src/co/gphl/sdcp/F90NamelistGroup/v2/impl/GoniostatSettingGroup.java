@@ -7,6 +7,8 @@
 package co.gphl.sdcp.F90NamelistGroup.v2.impl;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import co.gphl.common.namelist.F90NamelistGroup;
 import co.gphl.common.namelist.impl.F90NamelistGroupImpl;
@@ -41,6 +43,14 @@ public final class GoniostatSettingGroup
     public static final String spindleDeg = "SPINDLE_DEG";
     public static final String scanAxisNo = "SCAN_AXIS_NO";
     public static final String alignedCrystalAxisOrder = "ALIGNED_CRYSTAL_AXIS_ORDER";
+    
+    // Added by hand.
+    public static final String fAxisDeg = "%s_DEG";
+    public static final List<String> axisOrder =
+            Collections.unmodifiableList( 
+                    Arrays.asList( new String[] {"PHI", "KAPPA", "OMEGA"} )
+                    );
+    
 }
 
 @SuppressWarnings("serial")
