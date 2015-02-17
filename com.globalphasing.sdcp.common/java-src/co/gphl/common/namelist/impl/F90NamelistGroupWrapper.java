@@ -153,6 +153,11 @@ public abstract class F90NamelistGroupWrapper implements F90NamelistGroup, Seria
     public void clear() {
         baseGroup.clear();
     }
+    
+    @Override
+    public int size() {
+        return baseGroup.size();
+    }
 
     @Override
     public void write(Writer writer, String valueSeparator) throws IOException {

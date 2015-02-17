@@ -92,6 +92,7 @@ public interface NamelistGroup {
     public boolean      containsKey(String varName);
     public String[]     get(String varName);
     public void         clear();
+    public int          size();
     
     /**
      * Emits contents of namelist group to {@code writer}.
