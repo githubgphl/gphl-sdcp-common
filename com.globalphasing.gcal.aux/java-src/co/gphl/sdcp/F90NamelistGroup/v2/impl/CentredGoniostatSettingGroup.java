@@ -53,6 +53,11 @@ final class CentredGoniostatSettingGroupComparator
             CentredGoniostatSettingGroup.trans2,
             CentredGoniostatSettingGroup.trans3
            } );
+
+        this.valueTypeMap = new java.util.HashMap<String, co.gphl.common.namelist.ValueType>();
+        this.valueTypeMap.put(CentredGoniostatSettingGroup.id, co.gphl.common.namelist.ValueType.CHAR);
+        this.valueTypeMap.put(CentredGoniostatSettingGroup.goniostatSettingId, co.gphl.common.namelist.ValueType.CHAR);
+        
         }
         
     @Override
