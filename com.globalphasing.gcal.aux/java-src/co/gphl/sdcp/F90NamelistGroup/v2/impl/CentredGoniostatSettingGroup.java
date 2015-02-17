@@ -39,6 +39,13 @@ public final class CentredGoniostatSettingGroup
     public static final String trans1 = "TRANS_1";
     public static final String trans2 = "TRANS_2";
     public static final String trans3 = "TRANS_3";
+    
+    // Added by hand
+    public static final String fTrans = "TRANS_%c";
+    public static String settingName(int i) {
+        return String.format(fTrans, GcalInstrumentGroup.transAxisOrder.get(i));
+    }
+    
 }
 
 @SuppressWarnings("serial")

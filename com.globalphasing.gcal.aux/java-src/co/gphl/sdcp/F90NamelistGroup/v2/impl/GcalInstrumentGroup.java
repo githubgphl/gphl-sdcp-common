@@ -13,6 +13,10 @@
 
 package co.gphl.sdcp.F90NamelistGroup.v2.impl;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 import co.gphl.common.namelist.AbstractKeyList;
 import co.gphl.common.namelist.F90NamelistGroup;
 import co.gphl.common.namelist.impl.F90NamelistGroupImpl;
@@ -35,11 +39,25 @@ public abstract class GcalInstrumentGroup extends F90NamelistGroupImpl implement
     public static final String trans3Axis = "TRANS_3_AXIS";
     public static final String beam = "BEAM";
     
-    public static final String[] goniostatAxisVarnames = {
-        GcalInstrumentGroup.omegaAxis,
-        GcalInstrumentGroup.kappaAxis,
-        GcalInstrumentGroup.phiAxis
-    };
+    // Added by hand
+    public static final List<String> rotAxisOrder =
+            Collections.unmodifiableList( 
+                    Arrays.asList( new String[] {"PHI", "KAPPA", "OMEGA"} )
+                    );
+    public static final String fRotAxis="%s_AXIS";
+
+    public static final List<Character> transAxisOrder =
+            Collections.unmodifiableList(
+                Arrays.asList( new Character[] {'1', '2', '3'} )
+            );
+    public static final String fTransAxis="TRANS_%c_AXIS";
     
+    public static String rotAxisName(int i) {
+        return String.format(fRotAxis, rotAxisOrder.get(i));
+    }
+    
+    public static String transAxisName(int i) {
+        return String.format(fTransAxis, transAxisOrder.get(i));
+    }
     
 }

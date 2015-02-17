@@ -46,10 +46,10 @@ public final class GoniostatSettingGroup
     
     // Added by hand.
     public static final String fAxisDeg = "%s_DEG";
-    public static final List<String> axisOrder =
-            Collections.unmodifiableList( 
-                    Arrays.asList( new String[] {"PHI", "KAPPA", "OMEGA"} )
-                    );
+    
+    public static String settingName(int i) {
+        return String.format( fAxisDeg, GcalInstrumentGroup.rotAxisOrder.get(i) );
+    }
     
 }
 
