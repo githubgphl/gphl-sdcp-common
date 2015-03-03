@@ -50,33 +50,40 @@ public class ProcessLauncher {
 	/**
 	 * Starts the process specified to the constructor, copies the standard
 	 * output and error of the process to {@code out} and {@code err}, and
-	 * waits until the process has finished.
+	 * waits until the process has finished. If {@code err == null}, standard 
+	 * error of the process will be merged with standard output.
 	 * 
-	 * If any loggers are writing to the streams specified by {@code out}
+	 * <p>If any loggers are writing to the streams specified by {@code out}
 	 * or {@code err}, it may be helpful to flush the logger's handlers,
 	 * by {@link LoggerUtils#flush(java.util.logging.Logger)} or otherwise before
-	 * calling this method.
+	 * calling this method.</p>
 	 * 
 	 * @param out
 	 * @param err
 	 * @throws TerminationException if the subprocess exits with a non-zero status
 	 * @throws IOException
 	 * @throws InterruptedException
+	 * @see ProcessBuilder#redirectErrorStream(boolean)
 	 */
 	public void startAndWait(PrintStream out, PrintStream err)
 	        throws TerminationException, IOException, InterruptedException {
 
+		this.processBuilder.redirectErrorStream( err == null );
 		Process process = this.processBuilder.start();
 
-		StreamPrinter errPrinter = new StreamPrinter(process.getErrorStream(), err);
 		StreamPrinter outPrinter = new StreamPrinter(process.getInputStream(), out);
-		
-		errPrinter.start();
 		outPrinter.start();
+
+		StreamPrinter errPrinter = null;
+		if ( err != null ) {
+			errPrinter = new StreamPrinter(process.getErrorStream(), err);
+			errPrinter.start();
+		}
+		
 		int status = process.waitFor();
 
 		this.lastOutLine = outPrinter.getLastLine();
-		this.lastErrLine = errPrinter.getLastLine();
+		this.lastErrLine = errPrinter == null ? this.lastOutLine : errPrinter.getLastLine();
 		
 		if (status != 0) {
 			String cmd = "";

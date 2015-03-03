@@ -221,7 +221,7 @@ public abstract class GcalLauncher implements Serializable {
         this.myLogger.info("Starting " + cmd);
         LoggerUtils.flush(myLogger);
         ProcessLauncher launcher = new ProcessLauncher(processBuilder);
-        launcher.startAndWait();
+        launcher.startAndWait(System.out, null);
         this.myLogger.info(this.bin + " finished in " +
                 (System.currentTimeMillis() - startTime)/1000.0 + "s");
         
