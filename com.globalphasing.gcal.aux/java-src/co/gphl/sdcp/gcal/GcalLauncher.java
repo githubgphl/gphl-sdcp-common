@@ -1,5 +1,5 @@
 /*
- * Copyright © 2012, 2014 by Global Phasing Ltd. All rights reserved
+ * Copyright © 2012, 2015 by Global Phasing Ltd. All rights reserved
  *
  * This software is proprietary to and embodies the confidential
  * technology of Global Phasing Limited (GPhL).
@@ -15,7 +15,9 @@ package co.gphl.sdcp.gcal;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.io.Serializable;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -55,6 +57,9 @@ public abstract class GcalLauncher implements Serializable {
     private static Map<String, String> propNames = null;
     protected Map<String, String> args = new HashMap<String, String>();
     protected Map<String, String> env = new HashMap<String, String>();
+    
+    private String stdoutFilename, stderrFilename;
+    private Writer stdoutWriter, stderrWriter;
     
     // It may seem a bit fussy to define these as constants, but
     // doing so makes them visible in the Javadocs.
@@ -142,11 +147,17 @@ public abstract class GcalLauncher implements Serializable {
      * @param propNameNamespace Prefix for property names. {@code appName} is appended to this prefix.
      * @param properties Properties object that contains properties required to launch application.
      * {@code if properties == null} {@link System#getProperties() the system properties} will be used instead.
+     * @param stdoutWriter Destination for stdout. May be {@code null}
+     * @param stderrWriter Destination for stderr. May be {@code null}
+     * @param stdoutFilename Name of file in working directory to capture stdout. May be {@code null}
+     * @param stderrFilename Name of file in working directory to capture stderr. May be {@code null}
      * 
      * @throws IllegalArgumentException {@code if ( appName == null || appName.length() == 0 )}
+     * @see ProcessLauncher#startAndWait(Writer, Writer, File, File, boolean)
      */
     protected GcalLauncher(Logger logger,
-            String appName, String propNameNamespace, Properties properties ) {
+            String appName, String propNameNamespace, Properties properties,
+            Writer stdoutWriter, Writer stderrWriter, String stdoutFilename, String stderrFilename ) {
         this.myLogger = logger != null ? logger :
             LoggerSetup.getLogger(GcalLauncher.class.getSimpleName(), Level.WARNING);
         
@@ -165,6 +176,11 @@ public abstract class GcalLauncher implements Serializable {
         if ( ! this.check_bin_ok() )
             this.myLogger.warning("Specified executable " +
                     ( this.bin == null ? "<null>" : this.bin.toString() ) + " is not executable");
+
+        this.stdoutWriter = stdoutWriter;
+        this.stderrWriter = stderrWriter;
+        this.stdoutFilename = stdoutFilename;
+        this.stderrFilename = stderrFilename;
         
     }
         
@@ -221,7 +237,12 @@ public abstract class GcalLauncher implements Serializable {
         this.myLogger.info("Starting " + cmd);
         LoggerUtils.flush(myLogger);
         ProcessLauncher launcher = new ProcessLauncher(processBuilder);
-        launcher.startAndWait(System.out, null);
+        launcher.startAndWait(
+                this.stdoutWriter == null ? new PrintWriter(System.out): this.stdoutWriter,
+                this.stderrWriter == null ? null : this.stderrWriter,
+                this.stdoutFilename == null ? null : new File(wdir, this.stdoutFilename),
+                this.stderrFilename == null ? null : new File(wdir, this.stderrFilename),
+                false);
         this.myLogger.info(this.bin + " finished in " +
                 (System.currentTimeMillis() - startTime)/1000.0 + "s");
         

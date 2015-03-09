@@ -1,5 +1,5 @@
 /*
- * Copyright © 2012 by Global Phasing Ltd. All rights reserved
+ * Copyright © 2012, 2015 by Global Phasing Ltd. All rights reserved
  *
  * This software is proprietary to and embodies the confidential
  * technology of Global Phasing Limited (GPhL).
@@ -15,6 +15,7 @@ package co.gphl.sdcp.gcal;
 
 import java.io.File;
 import java.io.Serializable;
+import java.io.Writer;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -55,12 +56,10 @@ public class SimcalLauncher extends GcalLauncher implements Serializable {
     private static Map<String, String> propNames = null;
     private File hkli;
     
-    public SimcalLauncher(String propNameNamespace) {
-        this(propNameNamespace, null);
-    }
-    
-    public SimcalLauncher(String propNameNamespace, Properties properties) {
-        super(SimcalLauncher.logger, "simcal", propNameNamespace, properties);
+    public SimcalLauncher(String propNameNamespace, Properties properties,
+            Writer stdoutWriter, Writer stderrWriter, String stdoutFilename, String stderrFilename) {
+        super(SimcalLauncher.logger, "simcal", propNameNamespace, properties,
+                stdoutWriter, stderrWriter, stdoutFilename, stderrFilename);
     }
     
     public void setHkli(File hkli) {

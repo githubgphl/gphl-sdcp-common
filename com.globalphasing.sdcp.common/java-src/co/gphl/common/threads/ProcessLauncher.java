@@ -1,5 +1,5 @@
 /*
- * Copyright © 2010-2011 by Global Phasing Ltd. All rights reserved
+ * Copyright © 2010, 2015 by Global Phasing Ltd. All rights reserved
  *
  * This software is proprietary to and embodies the confidential
  * technology of Global Phasing Limited (GPhL).
@@ -16,6 +16,8 @@ package co.gphl.common.threads;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.Writer;
 
 import co.gphl.common.io.streams.StreamPrinter;
 import co.gphl.common.io.logging.LoggerUtils;
@@ -49,34 +51,37 @@ public class ProcessLauncher {
     
 	/**
 	 * Starts the process specified to the constructor, copies the standard
-	 * output and error of the process to {@code out} and {@code err}, and
-	 * waits until the process has finished. If {@code err == null}, standard 
+	 * output and error of the process to {@code stdout}/{@code stdoutFile}
+	 * and {@code stderr}/{@code stderrFile}, and waits until the process has finished.
+	 * {@code if (stderr == null && stderrFile == null)}, standard 
 	 * error of the process will be merged with standard output.
 	 * 
-	 * <p>If any loggers are writing to the streams specified by {@code out}
-	 * or {@code err}, it may be helpful to flush the logger's handlers,
+	 * <p>If any loggers are writing to the streams specified by {@code stdout}
+	 * or {@code stderr}, it may be helpful to flush the logger's handlers,
 	 * by {@link LoggerUtils#flush(java.util.logging.Logger)} or otherwise before
 	 * calling this method.</p>
 	 * 
-	 * @param out
-	 * @param err
+     * @param stdout
+     * @param stderr
+     * @param stdoutFile
+     * @param stderrFile
 	 * @throws TerminationException if the subprocess exits with a non-zero status
 	 * @throws IOException
 	 * @throws InterruptedException
 	 * @see ProcessBuilder#redirectErrorStream(boolean)
 	 */
-	public void startAndWait(PrintStream out, PrintStream err)
+	public void startAndWait(Writer stdout, Writer stderr, File stdoutFile, File stderrFile, boolean append)
 	        throws TerminationException, IOException, InterruptedException {
 
-		this.processBuilder.redirectErrorStream( err == null );
+		this.processBuilder.redirectErrorStream( stderr == null && stderrFile == null );
 		Process process = this.processBuilder.start();
 
-		StreamPrinter outPrinter = new StreamPrinter(process.getInputStream(), out);
+		StreamPrinter outPrinter = new StreamPrinter(process.getInputStream(), stdout, stdoutFile, append);
 		outPrinter.start();
 
 		StreamPrinter errPrinter = null;
-		if ( err != null ) {
-			errPrinter = new StreamPrinter(process.getErrorStream(), err);
+		if ( ! this.processBuilder.redirectErrorStream() ) {
+			errPrinter = new StreamPrinter(process.getErrorStream(), stderr, stderrFile, append);
 			errPrinter.start();
 		}
 		
@@ -106,7 +111,7 @@ public class ProcessLauncher {
 	public void startAndWait() throws TerminationException,
 			IOException, InterruptedException {
 		
-		this.startAndWait(System.out, System.err);
+		this.startAndWait(new PrintWriter(System.out), new PrintWriter(System.err), null, null, false );
 		
 	}
 
