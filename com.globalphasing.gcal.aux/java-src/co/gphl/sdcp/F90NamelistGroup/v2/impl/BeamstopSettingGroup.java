@@ -7,8 +7,10 @@
 package co.gphl.sdcp.F90NamelistGroup.v2.impl;
 
 import java.util.Arrays;
+import java.util.HashMap;
 
 import co.gphl.common.namelist.F90NamelistGroup;
+import co.gphl.common.namelist.ValueType;
 import co.gphl.common.namelist.impl.F90NamelistGroupImpl;
 
 @SuppressWarnings("serial")
@@ -51,8 +53,11 @@ final class BeamstopSettingGroupComparator
             BeamstopSettingGroup.beamStopSLength,
             BeamstopSettingGroup.beamStopSDistance
            } );
-        }
-        
+
+        this.valueTypeMap = new HashMap<String, ValueType>();
+        this.valueTypeMap.put(BeamstopSettingGroup.id, ValueType.CHAR);
+    }
+    
     @Override
     public String getListName() {
         throw new RuntimeException("Should not use this method in v2 namelist stuff!");
