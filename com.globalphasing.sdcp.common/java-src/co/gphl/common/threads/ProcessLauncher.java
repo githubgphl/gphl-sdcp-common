@@ -74,14 +74,15 @@ public class ProcessLauncher {
 	        throws TerminationException, IOException, InterruptedException {
 
 		this.processBuilder.redirectErrorStream( stderr == null && stderrFile == null );
+		String cmd = this.commandLine(80, "\\\n");
 		Process process = this.processBuilder.start();
 
-		StreamPrinter outPrinter = new StreamPrinter(process.getInputStream(), stdout, stdoutFile, append);
+		StreamPrinter outPrinter = new StreamPrinter(process.getInputStream(), stdout, stdoutFile, append, cmd);
 		outPrinter.start();
 
 		StreamPrinter errPrinter = null;
 		if ( ! this.processBuilder.redirectErrorStream() ) {
-			errPrinter = new StreamPrinter(process.getErrorStream(), stderr, stderrFile, append);
+			errPrinter = new StreamPrinter(process.getErrorStream(), stderr, stderrFile, append, null);
 			errPrinter.start();
 		}
 		
@@ -90,13 +91,9 @@ public class ProcessLauncher {
 		this.lastOutLine = outPrinter.getLastLine();
 		this.lastErrLine = errPrinter == null ? this.lastOutLine : errPrinter.getLastLine();
 		
-		if (status != 0) {
-			String cmd = "";
-			for (String c : processBuilder.command())
-				cmd += c + " ";
-			throw new TerminationException("Command '" + cmd
-					+ "'\n exited with status " + status);
-		}
+		if (status != 0)
+			throw new TerminationException("Command exited with status " + status
+			    + ":\n" + this.commandLine(80, "\n") );
 		
 	}
 	
@@ -123,5 +120,31 @@ public class ProcessLauncher {
         return lastErrLine;
     }
 	
+    private String commandLine(int width, String lineBreak) {
+        
+        StringBuilder retval = new StringBuilder();
+        int curWidth = 0;
+        
+        for (String token: this.processBuilder.command() ) {
+            
+            if ( curWidth > 0 ) {
+                retval.append(' ');
+                curWidth++;
+                
+                if ( curWidth + token.length() > width ) {
+                    retval.append(lineBreak);
+                    curWidth = 0;
+                }
+            }
+            
+            retval.append(token);
+            curWidth += token.length();
+        }
+
+        retval.append("\n\n");
+        
+        return retval.toString();
+        
+    }
 	
 }

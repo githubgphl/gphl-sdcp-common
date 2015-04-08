@@ -49,6 +49,7 @@ public class StreamPrinter extends Thread {
     private Writer outputWriter = null;
     private File outputFile;
     private boolean append;
+    private String header;
 
     String lastLine = null;
     
@@ -64,12 +65,15 @@ public class StreamPrinter extends Thread {
      * @param outputWriter
      * @param outputFile
      * @param append if {@code true}, output is appended to {@code outputFile}.
+     * @param header if not {@code null}, start output with this string
      */
-    public StreamPrinter(InputStream inputStream, Writer outputWriter, File outputFile, boolean append) {
+    public StreamPrinter(InputStream inputStream, Writer outputWriter, File outputFile,
+                         boolean append, String header) {
         this.is = inputStream;
         this.outputWriter = outputWriter;
         this.outputFile = outputFile;
         this.append = append;
+        this.header = header;
     }
 
     @Override
@@ -79,6 +83,11 @@ public class StreamPrinter extends Thread {
             final Writer fileWriter =
                     this.outputFile == null ? null : new FileWriter(outputFile, this.append);
 
+            if ( fileWriter != null )
+                fileWriter.write(this.header);
+            if ( this.outputWriter != null )
+                this.outputWriter.write(this.header);
+            
             try {
                 InputStreamReader isr = new InputStreamReader(is);
                 BufferedReader br = new BufferedReader(isr);
