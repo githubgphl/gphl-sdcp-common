@@ -12,27 +12,50 @@
 package co.gphl.common.namelist;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
-public abstract class AbstractKeyList
+// FIXME! This class is no longer abstract. It will be renamed as part of
+// a larger F90 namelist  code cleanup
+public class AbstractKeyList
     implements Comparator<String>, Serializable {
 
 	private static final long serialVersionUID = 8267289551405291431L;
 
+	private String listName;
+	
 	// Needed for serialisation of subclasses
 	protected AbstractKeyList() {}
+	
+	public AbstractKeyList( List<String> keyOrder, Map<String, ValueType> valueTypeMap,
+	                        String listName ) {
+	    
+	    this.listName = listName;
+	    
+	    if ( keyOrder != null && keyOrder.size() > 0 )
+	        this.keyOrder = new ArrayList<String>(keyOrder);
+	    
+	    if ( valueTypeMap != null && valueTypeMap.size() > 0 )
+	        this.valueTypeMap = new HashMap<String, ValueType>( valueTypeMap);
+	}
 	
     protected List<String> keyOrder = null;
     
     // Subclass instances should initialise this with upper-cased keys
     protected Map<String, ValueType> valueTypeMap = null;;
     
-    // Subclass instances should return the name that is defined statically
-    // in the implementing class
-    public abstract String getListName();
+    // In the F90 namelist v1 code, subclass instances override this method and
+    // return the name that is defined statically in the implementing class
+    // FIXME! In the v2 code, this really isn't needed any longer: the class that
+    // implements the particular type of namelist group or one of its instances
+    // will always be available, so we can get at the group name from that.
+    // When we have cleaned up all the v1 namelist stuff, we can get rid of this.
+    public String getListName() {
+        return this.listName;
+    }
 
 	
     /**

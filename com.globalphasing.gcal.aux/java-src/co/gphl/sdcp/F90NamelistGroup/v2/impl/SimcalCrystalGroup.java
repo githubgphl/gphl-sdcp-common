@@ -6,17 +6,22 @@
 
 package co.gphl.sdcp.F90NamelistGroup.v2.impl;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
+import co.gphl.common.namelist.AbstractKeyList;
 import co.gphl.common.namelist.F90NamelistGroup;
-import co.gphl.common.namelist.impl.F90NamelistGroupImpl;
+import co.gphl.common.namelist.ValueType;
 
 @SuppressWarnings("serial")
 public final class SimcalCrystalGroup
-    extends F90NamelistGroupImpl implements F90NamelistGroup {
+    extends CrystalGroup implements F90NamelistGroup {
    
     public SimcalCrystalGroup(Integer lineNo) {
-       super(SimcalCrystalGroup.varnameComparator(), SimcalCrystalGroup.groupName, lineNo);
+       super(SimcalCrystalGroup.varnameComparator(), lineNo);
     }
    
     public static final String groupName = "SIMCAL_CRYSTAL_LIST";
@@ -26,23 +31,21 @@ public final class SimcalCrystalGroup
         return SimcalCrystalGroup.groupName;
     }
 
-    private static SimcalCrystalGroupComparator varnameComparator = null;
-
-    private static SimcalCrystalGroupComparator varnameComparator() {
+    private static AbstractKeyList varnameComparator() {
         if ( SimcalCrystalGroup.varnameComparator == null )
-            SimcalCrystalGroup.varnameComparator = new SimcalCrystalGroupComparator();
+            SimcalCrystalGroup.initComparator();
         return SimcalCrystalGroup.varnameComparator;
     }
 
-    public static final String sgName = "SG_NAME";
-    public static final String cellDim = "CELL_DIM";
-    public static final String cellAngDeg = "CELL_ANG_DEG";
-    public static final String uMatAngDeg = "U_MAT_ANG_DEG";
-    public static final String cellAAxis = "CELL_A_AXIS";
-    public static final String cellBAxis = "CELL_B_AXIS";
-    public static final String cellCAxis = "CELL_C_AXIS";
-    public static final String orientMode = "ORIENT_MODE";
-    public static final String resLimitDef = "RES_LIMIT_DEF";
+    public static final String sgName        = CrystalGroup.sgName;
+    public static final String cellDim       = CrystalGroup.cellDim;
+    public static final String cellAngDeg    = CrystalGroup.cellAngDeg;
+    public static final String uMatAngDeg    = CrystalGroup.uMatAngDeg;
+    public static final String cellAAxis     = CrystalGroup.cellAAxis;
+    public static final String cellBAxis     = CrystalGroup.cellBAxis;
+    public static final String cellCAxis     = CrystalGroup.cellCAxis;
+    public static final String orientMode    = CrystalGroup.orientMode;
+    public static final String resLimitDef   = CrystalGroup.resLimitDef;
     public static final String cellRefAngDeg = "CELL_REF_ANG_DEG";
     public static final String cellDimSd = "CELL_DIM_SD";
     public static final String cellAngSdDeg = "CELL_ANG_SD_DEG";
@@ -50,40 +53,33 @@ public final class SimcalCrystalGroup
     public static final String sigmaN = "SIGMA_N";
     public static final String bWilson = "B_WILSON";
     public static final String b6Wilson = "B6_WILSON";
-}
-
-@SuppressWarnings("serial")
-final class SimcalCrystalGroupComparator
-    extends co.gphl.common.namelist.AbstractKeyList {
     
-    SimcalCrystalGroupComparator() {
-        this.keyOrder = Arrays.asList(new String [] {
-            SimcalCrystalGroup.sgName,
-            SimcalCrystalGroup.cellDim,
-            SimcalCrystalGroup.cellAngDeg,
-            SimcalCrystalGroup.uMatAngDeg,
-            SimcalCrystalGroup.cellAAxis,
-            SimcalCrystalGroup.cellBAxis,
-            SimcalCrystalGroup.cellCAxis,
-            SimcalCrystalGroup.orientMode,
-            SimcalCrystalGroup.resLimitDef,
-            SimcalCrystalGroup.cellRefAngDeg,
-            SimcalCrystalGroup.cellDimSd,
-            SimcalCrystalGroup.cellAngSdDeg,
-            SimcalCrystalGroup.uMatSdDeg,
-            SimcalCrystalGroup.sigmaN,
-            SimcalCrystalGroup.bWilson,
-            SimcalCrystalGroup.b6Wilson
-           } );
+    // FIXME! Ugh! sort this out properly!
+    private static List<String> keyOrder = null;
+    private static Map<String, ValueType> valueTypeMap = null;
+    private static AbstractKeyList varnameComparator = null;
 
-        this.valueTypeMap = new java.util.HashMap<String, co.gphl.common.namelist.ValueType>();
-        this.valueTypeMap.put(SimcalCrystalGroup.sgName, co.gphl.common.namelist.ValueType.CHAR);
+    private static void initComparator() {
         
-        }
-
-    @Override
-    public String getListName() {
-        throw new RuntimeException("Should not use this method in v2 namelist stuff!");
-    }  
+        SimcalCrystalGroup.keyOrder = new ArrayList<String>(CrystalGroup.getKeyOrder());
+        SimcalCrystalGroup.keyOrder.addAll(
+            Arrays.asList( new String[] {
+                    SimcalCrystalGroup.cellRefAngDeg,
+                    SimcalCrystalGroup.cellDimSd,
+                    SimcalCrystalGroup.cellAngSdDeg,
+                    SimcalCrystalGroup.uMatSdDeg,
+                    SimcalCrystalGroup.sigmaN,
+                    SimcalCrystalGroup.bWilson,
+                    SimcalCrystalGroup.b6Wilson } )
+                );
+        
+        SimcalCrystalGroup.valueTypeMap = new HashMap<String, co.gphl.common.namelist.ValueType>();
+        SimcalCrystalGroup.valueTypeMap.put(SimcalCrystalGroup.sgName, co.gphl.common.namelist.ValueType.CHAR);
+     
+        SimcalCrystalGroup.varnameComparator = new AbstractKeyList(SimcalCrystalGroup.keyOrder,
+            SimcalCrystalGroup.valueTypeMap, SimcalCrystalGroup.groupName);
+        
+    }
+    
 }
     
