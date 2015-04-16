@@ -58,7 +58,7 @@ public abstract class GcalLauncher implements Serializable {
     protected Map<String, String> args = new HashMap<String, String>();
     protected Map<String, String> env = new HashMap<String, String>();
     
-    private String stdoutFilename, stderrFilename;
+    private boolean outputToFile, redirectError;
     private Writer stdoutWriter, stderrWriter;
     
     // It may seem a bit fussy to define these as constants, but
@@ -149,15 +149,18 @@ public abstract class GcalLauncher implements Serializable {
      * {@code if properties == null} {@link System#getProperties() the system properties} will be used instead.
      * @param stdoutWriter Destination for stdout. May be {@code null}
      * @param stderrWriter Destination for stderr. May be {@code null}
-     * @param stdoutFilename Name of file in working directory to capture stdout. May be {@code null}
-     * @param stderrFilename Name of file in working directory to capture stderr. May be {@code null}
+     * @param outputToFile if {@code true}, captures stdout and stderr to file(s). The filename(s) are derived
+     * from the name of the second argument to {@link #launch(File, File)}
+     * @param redirectErrorStream combines stdout and stderr {@code if ( redirectError && stderrWriter == null ) }
      * 
      * @throws IllegalArgumentException {@code if ( appName == null || appName.length() == 0 )}
      * @see ProcessLauncher#startAndWait(Writer, Writer, File, File, boolean)
+     * @see ProcessBuilder#redirectErrorStream()
      */
     protected GcalLauncher(Logger logger,
             String appName, String propNameNamespace, Properties properties,
-            Writer stdoutWriter, Writer stderrWriter, String stdoutFilename, String stderrFilename ) {
+            Writer stdoutWriter, Writer stderrWriter,
+            boolean outputToFile, boolean redirectErrorStream ) {
         this.myLogger = logger != null ? logger :
             LoggerSetup.getLogger(GcalLauncher.class.getSimpleName(), Level.WARNING);
         
@@ -179,8 +182,8 @@ public abstract class GcalLauncher implements Serializable {
 
         this.stdoutWriter = stdoutWriter;
         this.stderrWriter = stderrWriter;
-        this.stdoutFilename = stdoutFilename;
-        this.stderrFilename = stderrFilename;
+        this.outputToFile = outputToFile;
+        this.redirectError = redirectErrorStream;
         
     }
         
@@ -236,13 +239,19 @@ public abstract class GcalLauncher implements Serializable {
         long startTime = System.currentTimeMillis();
         this.myLogger.info("Starting " + cmd);
         LoggerUtils.flush(myLogger);
+        
+        File stdout = null, stderr = null;
+        if ( this.outputToFile ) {
+            stdout = new File( wdir, infile.getName().replaceAll("\\.in$", ".stdout") );
+            if ( ! this.redirectError )
+                stderr = new File( wdir, infile.getName().replaceAll("\\.in$", ".stderr") );
+        }
+        
         ProcessLauncher launcher = new ProcessLauncher(processBuilder);
         launcher.startAndWait(
                 this.stdoutWriter == null ? new PrintWriter(System.out): this.stdoutWriter,
                 this.stderrWriter == null ? null : this.stderrWriter,
-                this.stdoutFilename == null ? null : new File(wdir, this.stdoutFilename),
-                this.stderrFilename == null ? null : new File(wdir, this.stderrFilename),
-                false);
+                stdout, stderr, false);
         this.myLogger.info(this.bin + " finished in " +
                 (System.currentTimeMillis() - startTime)/1000.0 + "s");
         
@@ -348,6 +357,10 @@ public abstract class GcalLauncher implements Serializable {
     
     public String getPropNamePrefix() {
         return this.propNamePrefix;
+    }
+ 
+    public String getAppName() {
+        return this.appName;
     }
     
 }

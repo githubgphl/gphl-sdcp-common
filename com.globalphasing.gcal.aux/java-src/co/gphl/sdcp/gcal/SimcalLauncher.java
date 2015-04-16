@@ -57,9 +57,9 @@ public class SimcalLauncher extends GcalLauncher implements Serializable {
     private File hkli;
     
     public SimcalLauncher(String propNameNamespace, Properties properties,
-            Writer stdoutWriter, Writer stderrWriter, String stdoutFilename, String stderrFilename) {
+            Writer stdoutWriter, Writer stderrWriter, boolean outputToFile, boolean redirectErrorStream) {
         super(SimcalLauncher.logger, "simcal", propNameNamespace, properties,
-                stdoutWriter, stderrWriter, stdoutFilename, stderrFilename);
+                stdoutWriter, stderrWriter, outputToFile, redirectErrorStream);
     }
     
     public void setHkli(File hkli) {
