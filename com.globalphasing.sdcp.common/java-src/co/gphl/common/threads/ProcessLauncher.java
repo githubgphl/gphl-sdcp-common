@@ -88,6 +88,11 @@ public class ProcessLauncher {
 		
 		int status = process.waitFor();
 
+		// Make sure that we don't race ahead of the output
+		outPrinter.join();
+		if ( errPrinter != null )
+		    errPrinter.join();
+		
 		this.lastOutLine = outPrinter.getLastLine();
 		this.lastErrLine = errPrinter == null ? this.lastOutLine : errPrinter.getLastLine();
 		
