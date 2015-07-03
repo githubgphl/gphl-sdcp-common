@@ -8,7 +8,9 @@ package co.gphl.sdcp.F90NamelistGroup.v2.impl;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import co.gphl.common.namelist.F90NamelistGroup;
 import co.gphl.common.namelist.impl.F90NamelistGroupImpl;
@@ -18,7 +20,7 @@ public final class GoniostatSettingGroup
     extends F90NamelistGroupImpl implements F90NamelistGroup {
    
     public GoniostatSettingGroup(Integer lineNo) {
-       super(GoniostatSettingGroup.varnameComparator(), GoniostatSettingGroup.groupName, lineNo);
+       super(GoniostatSettingGroup.varnameOrder, GoniostatSettingGroup.charVarnames, lineNo);
     }
    
     public static final String groupName = "GONIOSTAT_SETTING_LIST";
@@ -28,21 +30,30 @@ public final class GoniostatSettingGroup
         return GoniostatSettingGroup.groupName;
     }
 
-    private static GoniostatSettingGroupComparator varnameComparator = null;
-
-    private static GoniostatSettingGroupComparator varnameComparator() {
-        if ( GoniostatSettingGroup.varnameComparator == null )
-            GoniostatSettingGroup.varnameComparator = new GoniostatSettingGroupComparator();
-        return GoniostatSettingGroup.varnameComparator;
-    }
-
-    public static final String id = "ID";
-    public static final String omegaDeg = "OMEGA_DEG";
-    public static final String kappaDeg = "KAPPA_DEG";
-    public static final String phiDeg = "PHI_DEG";
-    public static final String spindleDeg = "SPINDLE_DEG";
-    public static final String scanAxisNo = "SCAN_AXIS_NO";
+    public static final String id                      = "ID";
+    public static final String omegaDeg                = "OMEGA_DEG";
+    public static final String kappaDeg                = "KAPPA_DEG";
+    public static final String phiDeg                  = "PHI_DEG";
+    public static final String spindleDeg              = "SPINDLE_DEG";
+    public static final String scanAxisNo              = "SCAN_AXIS_NO";
     public static final String alignedCrystalAxisOrder = "ALIGNED_CRYSTAL_AXIS_ORDER";
+
+    private static final List<String> varnameOrder = Collections.unmodifiableList(
+        Arrays.asList(new String [] {
+                GoniostatSettingGroup.id,
+                GoniostatSettingGroup.omegaDeg,
+                GoniostatSettingGroup.kappaDeg,
+                GoniostatSettingGroup.phiDeg,
+                GoniostatSettingGroup.spindleDeg,
+                GoniostatSettingGroup.scanAxisNo,
+                GoniostatSettingGroup.alignedCrystalAxisOrder
+        } ) );
+
+    private static final Set<String> charVarnames = Collections.unmodifiableSet(
+        new HashSet<String>(
+                Arrays.asList( new String[] {
+                        GoniostatSettingGroup.id
+                } ) ) );
     
     // Added by hand.
     public static final String fAxisDeg = "%s_DEG";
@@ -51,31 +62,5 @@ public final class GoniostatSettingGroup
         return String.format( fAxisDeg, GcalInstrumentGroup.rotAxisOrder.get(i) );
     }
     
-}
-
-@SuppressWarnings("serial")
-final class GoniostatSettingGroupComparator
-    extends co.gphl.common.namelist.AbstractKeyList {
-    
-    GoniostatSettingGroupComparator() {
-        this.keyOrder = Arrays.asList(new String [] {
-            GoniostatSettingGroup.id,
-            GoniostatSettingGroup.omegaDeg,
-            GoniostatSettingGroup.kappaDeg,
-            GoniostatSettingGroup.phiDeg,
-            GoniostatSettingGroup.spindleDeg,
-            GoniostatSettingGroup.scanAxisNo,
-            GoniostatSettingGroup.alignedCrystalAxisOrder
-           } );
-
-        this.valueTypeMap = new java.util.HashMap<String, co.gphl.common.namelist.ValueType>();
-        this.valueTypeMap.put(GoniostatSettingGroup.id, co.gphl.common.namelist.ValueType.CHAR);
-        
-        }
-
-    @Override
-    public String getListName() {
-        throw new RuntimeException("Should not use this method in v2 namelist stuff!");
-    }  
 }
     

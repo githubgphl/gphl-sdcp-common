@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright © 2010, 2013 by Global Phasing Ltd. All rights reserved             
+ * Copyright © 2010, 2015 by Global Phasing Ltd. All rights reserved             
  *                                                                              
  * This software is proprietary to and embodies the confidential                
  * technology of Global Phasing Limited (GPhL).                                 
@@ -12,9 +12,9 @@
 package co.gphl.common.namelist.impl;
 
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import co.gphl.common.namelist.AbstractKeyList;
 import co.gphl.common.namelist.F90NamelistData;
@@ -22,7 +22,7 @@ import co.gphl.common.namelist.F90NamelistGroup;
 import co.gphl.common.namelist.F90NamelistValueException;
 import co.gphl.common.namelist.NamelistGroup;
 
-public class F90NamelistGroupImpl 
+public abstract class F90NamelistGroupImpl 
 extends AbstractNamelistGroupImpl 
 implements F90NamelistGroup {
 
@@ -32,6 +32,11 @@ implements F90NamelistGroup {
     private static final long serialVersionUID = 1758046791779837267L;
     private String groupName;
     private F90NamelistData owningData = null;
+
+    protected F90NamelistGroupImpl( List<String> varnameOrder, Set<String> charVarnames, Integer lineNo) {
+        super(varnameOrder, charVarnames, lineNo);
+        this.maxLineLen = 70;
+    }
 
     /**
      * Creates a new instance sorted by {@code keyList}. The name of the
@@ -85,11 +90,6 @@ implements F90NamelistGroup {
     protected F90NamelistGroupImpl ( AbstractKeyList keyList, String name, Integer lineNo ) {
         this(keyList, name);
         this.lineNo = lineNo;
-    }
-
-    @Override
-    public String getGroupName() {
-        return groupName.toUpperCase();
     }
 
     @Override

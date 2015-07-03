@@ -13,7 +13,12 @@
 
 package co.gphl.sdcp.F90NamelistGroup.v2.impl;
 
-import co.gphl.common.namelist.AbstractKeyList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import co.gphl.common.namelist.F90NamelistGroup;
 import co.gphl.common.namelist.impl.F90NamelistGroupImpl;
 
@@ -21,20 +26,35 @@ import co.gphl.common.namelist.impl.F90NamelistGroupImpl;
 public abstract class GcalSweepGroup
     extends F90NamelistGroupImpl implements F90NamelistGroup {
 
-    public GcalSweepGroup(AbstractKeyList keyList, String name) {
-        super(keyList, name, null);
+    public GcalSweepGroup( List<String> varnameOrder, Set<String> charVarnames, Integer lineNo ) {
+        super(varnameOrder, charVarnames, lineNo);
     }
     
-    public GcalSweepGroup(AbstractKeyList keyList, String name, Integer lineNo) {
-        super(keyList, name, lineNo);
-    }
-
     public static final String goniostatSettingId = "GONIOSTAT_SETTING_ID";
     public static final String centredGoniostatSettingId = "CENTRED_GONIOSTAT_SETTING_ID";
     public static final String beamSettingId = "BEAM_SETTING_ID";
     public static final String detectorSettingId = "DETECTOR_SETTING_ID";
     public static final String beamstopSettingId = "BEAMSTOP_SETTING_ID";
     public static final String startDeg = "START_DEG";
-        
 
+    protected static final List<String> varnameOrder = Collections.unmodifiableList(
+        Arrays.asList(new String [] {
+                GcalSweepGroup.goniostatSettingId,
+                GcalSweepGroup.centredGoniostatSettingId,
+                GcalSweepGroup.beamSettingId,
+                GcalSweepGroup.detectorSettingId,
+                GcalSweepGroup.beamstopSettingId,
+                GcalSweepGroup.startDeg
+        } ) );
+
+    protected static final Set<String> charVarnames = Collections.unmodifiableSet(
+        new HashSet<String>(
+                Arrays.asList( new String[] {
+                        GcalSweepGroup.goniostatSettingId,
+                        GcalSweepGroup.centredGoniostatSettingId,
+                        GcalSweepGroup.beamSettingId,
+                        GcalSweepGroup.detectorSettingId,
+                        GcalSweepGroup.beamstopSettingId,
+                } ) ) );
+    
 }

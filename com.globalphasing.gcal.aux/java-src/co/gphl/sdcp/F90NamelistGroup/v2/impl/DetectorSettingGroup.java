@@ -7,6 +7,10 @@
 package co.gphl.sdcp.F90NamelistGroup.v2.impl;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import co.gphl.common.namelist.F90NamelistGroup;
 import co.gphl.common.namelist.impl.F90NamelistGroupImpl;
@@ -16,7 +20,7 @@ public final class DetectorSettingGroup
     extends F90NamelistGroupImpl implements F90NamelistGroup {
    
     public DetectorSettingGroup(Integer lineNo) {
-       super(DetectorSettingGroup.varnameComparator(), DetectorSettingGroup.groupName, lineNo);
+       super(DetectorSettingGroup.varnameOrder, DetectorSettingGroup.charVarnames, lineNo);
     }
    
     public static final String groupName = "DETECTOR_SETTING_LIST";
@@ -26,38 +30,20 @@ public final class DetectorSettingGroup
         return DetectorSettingGroup.groupName;
     }
 
-    private static DetectorSettingGroupComparator varnameComparator = null;
-
-    private static DetectorSettingGroupComparator varnameComparator() {
-        if ( DetectorSettingGroup.varnameComparator == null )
-            DetectorSettingGroup.varnameComparator = new DetectorSettingGroupComparator();
-        return DetectorSettingGroup.varnameComparator;
-    }
-
-    public static final String id = "ID";
-    public static final String detCoord = "DET_COORD";
+    public static final String id          = "ID";
+    public static final String detCoord    = "DET_COORD";
     public static final String twoThetaDeg = "TWO_THETA_DEG";
+
+    private static final List<String> varnameOrder = Collections.unmodifiableList(
+        Arrays.asList(new String [] {
+                DetectorSettingGroup.id,
+                DetectorSettingGroup.detCoord,
+                DetectorSettingGroup.twoThetaDeg
+        } ) );
+
+    private static final Set<String> charVarnames = Collections.unmodifiableSet(
+        new HashSet<String>(
+                Arrays.asList( new String[] {
+                        DetectorSettingGroup.id
+                } ) ) );
 }
-
-@SuppressWarnings("serial")
-final class DetectorSettingGroupComparator
-    extends co.gphl.common.namelist.AbstractKeyList {
-    
-    DetectorSettingGroupComparator() {
-        this.keyOrder = Arrays.asList(new String [] {
-            DetectorSettingGroup.id,
-            DetectorSettingGroup.detCoord,
-            DetectorSettingGroup.twoThetaDeg
-           } );
-
-        this.valueTypeMap = new java.util.HashMap<String, co.gphl.common.namelist.ValueType>();
-        this.valueTypeMap.put(DetectorSettingGroup.id, co.gphl.common.namelist.ValueType.CHAR);
-        
-        }
-
-    @Override
-    public String getListName() {
-        throw new RuntimeException("Should not use this method in v2 namelist stuff!");
-    }  
-}
-    

@@ -16,8 +16,8 @@ package co.gphl.sdcp.F90NamelistGroup.v2.impl;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
-import co.gphl.common.namelist.AbstractKeyList;
 import co.gphl.common.namelist.F90NamelistGroup;
 import co.gphl.common.namelist.impl.F90NamelistGroupImpl;
 
@@ -25,8 +25,8 @@ import co.gphl.common.namelist.impl.F90NamelistGroupImpl;
 public abstract class GcalInstrumentGroup extends F90NamelistGroupImpl implements
         F90NamelistGroup {
 
-    protected GcalInstrumentGroup(AbstractKeyList keyList, String name, Integer lineNo) {
-        super(keyList, name, lineNo);
+    protected GcalInstrumentGroup(List<String> varnameOrder, Set<String> charVarnames, Integer lineNo) {
+        super(varnameOrder, charVarnames, lineNo);
     }
 
     public static final String twoThetaAxis = "TWO_THETA_AXIS";
@@ -38,6 +38,20 @@ public abstract class GcalInstrumentGroup extends F90NamelistGroupImpl implement
     public static final String trans2Axis = "TRANS_2_AXIS";
     public static final String trans3Axis = "TRANS_3_AXIS";
     public static final String beam = "BEAM";
+    
+    protected static final List<String> varnameOrder = Collections.unmodifiableList(
+        Arrays.asList(new String [] {
+                GcalInstrumentGroup.twoThetaAxis,
+                GcalInstrumentGroup.omegaAxis,
+                GcalInstrumentGroup.kappaAxis,
+                GcalInstrumentGroup.phiAxis,
+                GcalInstrumentGroup.spindleAxis,
+                GcalInstrumentGroup.trans1Axis,
+                GcalInstrumentGroup.trans2Axis,
+                GcalInstrumentGroup.trans3Axis,
+                GcalInstrumentGroup.beam
+               } )
+        );
     
     // Added by hand
     public static final List<String> rotAxisOrder =

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright © 2010, 2013 by Global Phasing Ltd. All rights reserved             
+ * Copyright © 2010, 2015 by Global Phasing Ltd. All rights reserved             
  *                                                                              
  * This software is proprietary to and embodies the confidential                
  * technology of Global Phasing Limited (GPhL).                                 
@@ -17,14 +17,10 @@ import java.io.IOException;
 import java.io.LineNumberReader;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedMap;
-
 import co.gphl.common.namelist.AbstractKeyList;
 import co.gphl.common.namelist.F90NamelistData;
 import co.gphl.common.namelist.F90NamelistException;
@@ -151,13 +147,16 @@ public class F90NamelistImpl
      * @param appName application name. Not currently used.
      */
     public F90NamelistImpl( F90NamelistGroupFactory factory, String appName ) {
+        if ( factory == null )
+            throw new IllegalArgumentException("Must specify a namelist group factory");
         this.appName = ( appName == null ? "" : appName.toLowerCase() );
         this.nlgFactory = factory;
     }
 	
 	/**
 	 * Populates empty instance from the contents of a namelist file.
-	 * Throws a RuntimeException if size of instance is not zero.
+	 * Throws a RuntimeException if size of instance is not zero
+	 * or the instance does not have a factory defined.
 	 * 
 	 * @param nlFile File containing namelist input
 	 * @throws IOException
@@ -167,6 +166,10 @@ public class F90NamelistImpl
 
 	    if ( this.size() > 0 )
 	        throw new RuntimeException("The read method should only be called on an empty instance");
+	    
+	    // FIXME! make read method private, and shift nlFile to constructor arg together with factory
+	    if ( this.nlgFactory == null )
+	        throw new RuntimeException("Factory must have been defined to call read method");
 	    
 		this.nlFile = nlFile;
 
@@ -321,37 +324,14 @@ public class F90NamelistImpl
 	protected F90NamelistException newException ( String msg ) {
 		return new F90NamelistException ( errorMessage(msg) );				
 	}
-    
-	
-	/**
-	 * Register an {@link AbstractKeyList} instance with this data, under the
-	 * name {@link AbstractKeyList#getListName()}. {@code keyList} is used:
-	 * 
-	 *  <ul>
-	 *   <li>As a {@link Comparator} (see {@link SortedMap})</li>
-	 *   <li>To provide information on special handling needed 
-	 *   for particular variables</li>
-	 *   <li>Provides the name of namelist groups that are allowed to belong
-	 *   to this namelist data</li>
-	 *  </ul>
-	 * 
-	 * @param keyList AbstractKeyList instance
-	 */
-	public void addKeyList ( AbstractKeyList keyList ) {
-	    if ( this.keyLists == null )
-	        this.keyLists = new HashMap<String, AbstractKeyList>();
-	    this.keyLists.put(keyList.getListName().toUpperCase(), keyList);
-	    
-	}
-	
-	
+
 	/**
 	 * Retrieve AbstractKeyList instance registered under {@code name}
 	 * 
 	 * @param name name under which {@code keyList} is registered (converted internally to upper case)
 	 * @return Comparator instance, or null if no comparator registered under {@code name}
 	 */
-	public AbstractKeyList getKeyList( String name ) {
+	private AbstractKeyList getKeyList( String name ) {
 	    return keyLists == null ? null : this.keyLists.get(name.toUpperCase());
 	}
 	
@@ -378,19 +358,13 @@ public class F90NamelistImpl
     public F90NamelistGroup newNamelistGroup ( String name, Integer lineNo, boolean addAtEnd ) {
 
         F90NamelistGroup retval = null;
-        if ( this.nlgFactory != null )
-            // FIXME! change throwException to true when we have moved completely
-            // to v2, and remove following clause
-            retval = this.nlgFactory.newInstance(name, false, lineNo);
-        if ( retval == null )
-            retval = new F90NamelistGroupImpl ( 
-                    this.getKeyList(name.toUpperCase()), name, lineNo );
+        retval = this.nlgFactory.newInstance(name, true, lineNo);
         if ( addAtEnd )
             this.add(retval);
         return retval;
     }
 
-    public boolean addAsTyped( F90NamelistGroup namelistGroup ) {
+    private boolean addAsTyped( F90NamelistGroup namelistGroup ) {
         // If we know that we can always identify the type of the namelist group
         // from the group name alone, we could override List.add() and List.set().
         // As it is, we may need to use some of the data in the namelist group
