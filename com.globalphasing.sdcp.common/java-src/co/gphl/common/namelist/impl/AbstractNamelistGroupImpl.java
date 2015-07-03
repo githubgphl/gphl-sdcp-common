@@ -163,11 +163,6 @@ public abstract class AbstractNamelistGroupImpl
         this.keyList = keyList;
     }
 
-    public AbstractNamelistGroupImpl ( AbstractKeyList keyList, int lineNo ) {
-        this(keyList);
-        this.lineNo = lineNo;
-    }
-
     protected AbstractNamelistGroupImpl ( NamelistGroup group ) {
         // N.B. if group implements SortedMap, the ordering is maintained
         // in the new instance

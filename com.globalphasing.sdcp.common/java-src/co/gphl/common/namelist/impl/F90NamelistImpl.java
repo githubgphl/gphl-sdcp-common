@@ -19,9 +19,8 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import co.gphl.common.namelist.AbstractKeyList;
+
 import co.gphl.common.namelist.F90NamelistData;
 import co.gphl.common.namelist.F90NamelistException;
 import co.gphl.common.namelist.F90NamelistGroup;
@@ -55,24 +54,21 @@ import co.gphl.common.namelist.F90NamelistValueException;
  * To create namelist data by reading from a file, a typical usage pattern is:
  * 
  * <pre>
- *    F90NamelistImpl namelistData = new F90NamelistImpl();
- *    namelistData.load(new File("filename.txt"));
+ *    F90NamelistImpl namelistData = new F90NamelistImpl(GcalAuxGroupFactory.factory());
+ *    namelistData.read(new File("filename.txt"));
  * </pre>
  * 
  * To create namelist data programmatically, with the intention of writing
  * it out to a file, a typical pattern is:
  * 
  * <pre>
- *    F90NamelistImpl namelistData = new F90NamelistImpl("xdsks");
- *    namelistData.addKeyList( XdsksSetupList.instance() );
- *    namelistData.addKeyList( XdsksSweepList.instance() );
- *    F90NamelistGroup group = namelistData.newNamelistGroup(XdsksSetupList.listName, null);
+ *    F90NamelistImpl namelistData = new F90NamelistImpl("simcal");
+ *    F90NamelistGroup loopCounts = new LoopCountGroup(null);
+ *    ...        
+ *    namelistData.add(loopCounts);
  *    ....
+ *    namelistData.write(new File("filename.txt"));
  * </pre>
- * 
- * where {@code XdsksSetupList} and {@code XdsksSweepList} are subtypes of
- * {@link AbstractKeyList} that are implemented (in this case) with a
- * singleton pattern.
  * 
  * @author Peter Keller
  *
@@ -81,14 +77,11 @@ public class F90NamelistImpl
 	extends ArrayList< F90NamelistGroup >
 	implements F90NamelistData {
 
-	private static final long serialVersionUID = 2387367286532154444L;
 	private File nlFile = null;
 	private LineNumberReader reader = null;
 	private int curLineNumber = 0;
 	
 	private String appName = null;
-	private Map<String, AbstractKeyList> keyLists = null;
-	
 	private F90NamelistGroupFactory nlgFactory = null;
 	
     // Default is to use comma-separated F90 style values, but
@@ -98,22 +91,19 @@ public class F90NamelistImpl
 	
     protected Set<Class<? extends F90NamelistGroup>> includedGroups = null;
     
-    // FIXME! Make factory compulsory when we have switched to v2.
     
-	/**
-	 * Creates new empty instance. If this instance will be used to write
-	 * v1 namelist data to a file, in most cases the appropriate {@link AbstractKeyList}
-	 * instances should be registered with the {@link #addKeyList(AbstractKeyList)}
-	 * method. This is not needed for v2 namelist data.
-	 */
-	public F90NamelistImpl() {
-	}
-	
     /**
-     * Creates new empty instance. If this instance will be used to write
-     * v1 namelist data to a file, in most cases the appropriate {@link AbstractKeyList}
-     * instances should be registered with the {@link #addKeyList(AbstractKeyList)}
-     * method. This is not needed for v2 namelist data.
+     * Creates new empty instance for populating programatically with
+     * {@link F90NamelistGroup} instances.
+     * The instance should not be used for reading namelist formatted data.
+     */
+    public F90NamelistImpl() {
+    }
+
+    /**
+     * Creates new empty instance for populating programatically with
+     * {@link F90NamelistGroup} instances.
+     * The instance should not be used for reading namelist formatted data.
      * 
      * @param appName application name. Not currently used.
      */
@@ -122,29 +112,25 @@ public class F90NamelistImpl
     }
     
     /**
-     * Creates new empty instance. If this instance will be used to write
-     * v1 namelist data to a file, in most cases the appropriate {@link AbstractKeyList}
-     * instances should be registered with the {@link #addKeyList(AbstractKeyList)}
-     * method. This is not needed for v2 namelist data.
+     * Creates new empty instance, suitable for populating by reading namelist
+     * formatted data or by {@link #newNamelistGroup(String, Integer, boolean)}.
      * 
-     * @param factory namelist group factory to be used to create v2 {@link F90NamelistGroup}
-     * instances when reading namelist-format data from files. If {@code null} v1
-     * heuristics will be used instead.
+     * @param factory namelist group factory to be used to create {@link F90NamelistGroup}
+     * instances when reading namelist-format data from files.
+     * @throws IllegalArgumentException if {@code factory == null}
      */
     public F90NamelistImpl( F90NamelistGroupFactory factory ) {
         this(factory, null);
     }
     
     /**
-     * Creates new empty instance. If this instance will be used to write
-     * v1 namelist data to a file, in most cases the appropriate {@link AbstractKeyList}
-     * instances should be registered with the {@link #addKeyList(AbstractKeyList)}
-     * method. This is not needed for v2 namelist data.
+     * Creates new empty instance, suitable for populating by reading namelist
+     * formatted data.
      * 
-     * @param factory namelist group factory to be used to create v2 {@link F90NamelistGroup}
-     * instances when reading namelist-format data from files. If {@code null} v1
-     * heuristics will be used instead.
+     * @param factory namelist group factory to be used to create {@link F90NamelistGroup}
+     * instances when reading namelist-format data from files. 
      * @param appName application name. Not currently used.
+     * @throws IllegalArgumentException if {@code factory == null}
      */
     public F90NamelistImpl( F90NamelistGroupFactory factory, String appName ) {
         if ( factory == null )
@@ -213,7 +199,7 @@ public class F90NamelistImpl
 					    varName = null;
 					    valueList = null;
 					    
-					    this.addAsTyped(curGroup);
+					    this.add(curGroup);
 					    curGroup.setOwningData(this);
 						curGroup = null;
 					}
@@ -326,20 +312,8 @@ public class F90NamelistImpl
 	}
 
 	/**
-	 * Retrieve AbstractKeyList instance registered under {@code name}
-	 * 
-	 * @param name name under which {@code keyList} is registered (converted internally to upper case)
-	 * @return Comparator instance, or null if no comparator registered under {@code name}
-	 */
-	private AbstractKeyList getKeyList( String name ) {
-	    return keyLists == null ? null : this.keyLists.get(name.toUpperCase());
-	}
-	
-    /**
-     * Returns a new {@link F90NamelistGroup} called {@code name}.
-     * For v1 namelist groups, if a {@link AbstractKeyList} has been registered under
-     * {@code name}, it will determine the the sort order of the keys
-     * of the new {@code F90NamelistGroup}.
+     * Returns a new {@link F90NamelistGroup} of the correct type
+     * corresponding to {@code name}.
      * 
      * Where the new namelist group is being created by reading data from a
      * namelist file, a line number may be provided to make diagnostics
@@ -353,10 +327,16 @@ public class F90NamelistImpl
      * @param lineNo line number in file where namelist group starts. May be {@code null}.
      * @param addAtEnd if true, will add new namelist group to end of namelist data
      * @return new namelist group
-     * @see #addKeyList(AbstractKeyList)
+     * @throws IllegalStateException if no factory has been defined for this
+     * instance.
+     * @see #F90NamelistImpl(F90NamelistGroupFactory)
+     * @see F90NamelistGroupFactory#newInstance(String, boolean, Integer)
      */
     public F90NamelistGroup newNamelistGroup ( String name, Integer lineNo, boolean addAtEnd ) {
 
+        if ( this.nlgFactory == null )
+            throw new IllegalStateException("Cannot use this method without the appropriate namelist group factory having been defined");
+        
         F90NamelistGroup retval = null;
         retval = this.nlgFactory.newInstance(name, true, lineNo);
         if ( addAtEnd )
@@ -364,19 +344,19 @@ public class F90NamelistImpl
         return retval;
     }
 
-    private boolean addAsTyped( F90NamelistGroup namelistGroup ) {
-        // If we know that we can always identify the type of the namelist group
-        // from the group name alone, we could override List.add() and List.set().
-        // As it is, we may need to use some of the data in the namelist group
-        // itself to work out the type.
-        AbstractKeyList keyList = this.getKeyList(namelistGroup.getGroupName());
-        if ( keyList != null )
-            this.add( keyList.asTypedNamelistGroup(namelistGroup) );
-        else
-            this.add(namelistGroup);
-        return true;
-    }
-    
+//    private boolean addAsTyped( F90NamelistGroup namelistGroup ) {
+//        // If we know that we can always identify the type of the namelist group
+//        // from the group name alone, we could override List.add() and List.set().
+//        // As it is, we may need to use some of the data in the namelist group
+//        // itself to work out the type.
+//        AbstractKeyList keyList = this.getKeyList(namelistGroup.getGroupName());
+//        if ( keyList != null )
+//            this.add( keyList.asTypedNamelistGroup(namelistGroup) );
+//        else
+//            this.add(namelistGroup);
+//        return true;
+//    }
+//    
 	/* (non-Javadoc)
 	 * @see co.gphl.common.namelist.NamelistData#setCommaSeparator(boolean)
 	 */

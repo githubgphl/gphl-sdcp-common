@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import co.gphl.common.namelist.AbstractKeyList;
 import co.gphl.common.namelist.F90NamelistData;
 import co.gphl.common.namelist.F90NamelistGroup;
 import co.gphl.common.namelist.F90NamelistValueException;
@@ -30,7 +29,6 @@ implements F90NamelistGroup {
      * 
      */
     private static final long serialVersionUID = 1758046791779837267L;
-    private String groupName;
     private F90NamelistData owningData = null;
 
     protected F90NamelistGroupImpl( List<String> varnameOrder, Set<String> charVarnames, Integer lineNo) {
@@ -38,60 +36,7 @@ implements F90NamelistGroup {
         this.maxLineLen = 70;
     }
 
-    /**
-     * Creates a new instance sorted by {@code keyList}. The name of the
-     * instance is given by {@code keyList.getListName()}.
-     * 
-     * @param keyList the comparator used to sort by key. May not be null.
-     */
-    public F90NamelistGroupImpl ( AbstractKeyList keyList ) {
-    	this(keyList, keyList.getListName());
-    }
     
-    /**
-     * Creates a new instance sorted by {@code keyList}.
-     * 
-     * @param keyList the comparator that will be used to sort this F90NamelistGroupImpl
-     * by key. A <code>null</code> value indicates that the keys' <i>natural ordering</i>
-     * should be used.
-     * @param name name of new instance
-     * 
-     * @see java.util.TreeMap#TreeMap(Comparator)
-     * 
-     */
-    protected F90NamelistGroupImpl( AbstractKeyList keyList, String name ) {
-        super(keyList);
-        this.groupName = name;
-        this.maxLineLen = 70;
-    }
-
-    
-    /**
-     * Calls {@link #F90NamelistGroupImpl(AbstractKeyList, String, Integer)} with
-     * {@code keyList.getListName()} as the second parameter.
-     * 
-     * @param keyList
-     * @param lineNo
-     */
-    public F90NamelistGroupImpl( AbstractKeyList keyList, Integer lineNo ) {
-    	this(keyList, keyList.getListName(), lineNo);
-    }
-    
-    
-    /**
-     * Calls {@link #F90NamelistGroupImpl(Comparator, String)}, but also stores a line number
-     * that can be output for diagnostic purposes. This is intended to be used when reading
-     * namelist data from a file.
-     * 
-     * @param keyList - may be null to indicate natural ordering is to be used
-     * @param name
-     * @param lineNo
-     */
-    protected F90NamelistGroupImpl ( AbstractKeyList keyList, String name, Integer lineNo ) {
-        this(keyList, name);
-        this.lineNo = lineNo;
-    }
-
     @Override
     public String[] put( String varName, String valueList ) {
         // Fortran90 identifiers start with a letter, then a sequence of letters,
