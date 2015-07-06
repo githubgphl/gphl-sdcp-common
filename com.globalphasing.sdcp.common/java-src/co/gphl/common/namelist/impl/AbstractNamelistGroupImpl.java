@@ -21,10 +21,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import co.gphl.common.namelist.AbstractKeyList;
 import co.gphl.common.namelist.NamelistGroup;
 import co.gphl.common.namelist.F90NamelistValueException;
-import co.gphl.common.namelist.ValueType;
 import co.gphl.common.namelist.VarnameComparator;
 
 /**
@@ -54,15 +52,8 @@ public abstract class AbstractNamelistGroupImpl
     // Approximate maximum line length on output.
     protected int maxLineLen;
     
-    // For now, set version of namelist data explicitly (keyList/comparator/charVarnames
-    // can legitimately all be null)
-    private int namelistVersion;
-    
     // Keep track of this explicitly, so we don't have to keep
     // fishing it back from the TreeMap and casting it.
-    // keyList is for v1 namelists (will soon be removed),
-    // comparator/charVarnames is for v2 namelists.
-    private AbstractKeyList keyList;
     private VarnameComparator comparator = null;
     private Set<String> charVarnames = null;
     
@@ -82,20 +73,8 @@ public abstract class AbstractNamelistGroupImpl
         this.comparator = comparator;
         this.charVarnames = charVarnames;
         this.lineNo = lineNo;
-        this.namelistVersion = 2;
     }
     
-    protected AbstractNamelistGroupImpl(AbstractKeyList keyList) {
-        super(keyList);
-        this.keyList = keyList;
-        this.namelistVersion = 1;
-    }
-
-    public AbstractNamelistGroupImpl ( AbstractKeyList keyList, int lineNo ) {
-        this(keyList);
-        this.lineNo = lineNo;
-    }
-
     protected AbstractNamelistGroupImpl ( NamelistGroup group ) {
         // N.B. if group implements SortedMap, the ordering is maintained
         // in the new instance
@@ -108,15 +87,7 @@ public abstract class AbstractNamelistGroupImpl
     
     @Override
     public Boolean accepts(String keyName) {
-        
-        if ( this.namelistVersion == 2 ) 
-            // v2 namelist group: check comparator
-            return this.comparator == null ? null : this.comparator.contains(keyName);
-        else if ( this.namelistVersion == 1 )
-            // v1 namelist group. Get rid of this when transition to v2 is complete.
-            return this.keyList == null ? null : this.keyList.contains(keyName.toUpperCase());
-        else
-            throw new IllegalStateException("Illegal namelist version number " + this.namelistVersion);
+        return this.comparator == null ? null : this.comparator.contains(keyName);
     } 
     
     /**
@@ -369,8 +340,7 @@ public abstract class AbstractNamelistGroupImpl
                     
                     // Specific transformations of values on output:
                     // CHAR => single-quoted, with embedded single quotes doubled.
-                    if ( ( charVarnames != null && charVarnames.contains(key) ) ||
-                          ( keyList != null && keyList.getValueType(key) == ValueType.CHAR ) )
+                    if ( charVarnames != null && charVarnames.contains(key) ) 
                         outLine += "'" + v.replace("'", "''") + "'";
                     else {
                         outLine += v;
