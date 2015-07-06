@@ -6,10 +6,7 @@
 
 package co.gphl.sdcp.F90NamelistGroup.v2.impl;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
+import co.gphl.common.namelist.VarnameComparator;
 import co.gphl.common.namelist.F90NamelistGroup;
 import co.gphl.common.namelist.impl.F90NamelistGroupImpl;
 
@@ -18,7 +15,7 @@ public final class SimcalOptionsGroup
     extends F90NamelistGroupImpl implements F90NamelistGroup {
    
     public SimcalOptionsGroup(Integer lineNo) {
-       super(SimcalOptionsGroup.varnameOrder, null, lineNo);
+       super(SimcalOptionsGroup.varnameComparator, null, lineNo);
     }
    
     public static final String groupName = "SIMCAL_OPTIONS_LIST";
@@ -38,8 +35,8 @@ public final class SimcalOptionsGroup
     public static final String genMode     = "GEN_MODE";
     public static final String bcgMode     = "BCG_MODE";
 
-    private static final List<String> varnameOrder = Collections.unmodifiableList(
-        Arrays.asList(new String [] {
+    private static final VarnameComparator varnameComparator = 
+        new VarnameComparator(new String [] {
                 SimcalOptionsGroup.psfGamma,
                 SimcalOptionsGroup.pixQuantile,
                 SimcalOptionsGroup.imgBlending,
@@ -49,5 +46,5 @@ public final class SimcalOptionsGroup
                 SimcalOptionsGroup.simMode,
                 SimcalOptionsGroup.genMode,
                 SimcalOptionsGroup.bcgMode
-        } ) );
+        } );
 }

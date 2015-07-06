@@ -6,10 +6,7 @@
 
 package co.gphl.sdcp.F90NamelistGroup.v2.impl;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
+import co.gphl.common.namelist.VarnameComparator;
 import co.gphl.common.namelist.F90NamelistGroup;
 import co.gphl.common.namelist.impl.F90NamelistGroupImpl;
 
@@ -18,7 +15,7 @@ public final class LoopCountGroup
     extends F90NamelistGroupImpl implements F90NamelistGroup {
    
     public LoopCountGroup(Integer lineNo) {
-       super(LoopCountGroup.varnameOrder, null, lineNo);
+       super(LoopCountGroup.varnameComparator, null, lineNo);
     }
    
     public static final String groupName = "LOOP_COUNT_LIST";
@@ -40,8 +37,8 @@ public final class LoopCountGroup
     public static final String nBeamstopSettings         = "N_BEAMSTOP_SETTINGS";
     public static final String nCrystals                 = "N_CRYSTALS";
 
-    private static final List<String> varnameOrder = Collections.unmodifiableList(
-        Arrays.asList(new String [] {
+    private static final VarnameComparator varnameComparator = 
+        new VarnameComparator(new String [] {
                 LoopCountGroup.nVertices,
                 LoopCountGroup.nTriangles,
                 LoopCountGroup.nSegments,
@@ -53,5 +50,5 @@ public final class LoopCountGroup
                 LoopCountGroup.nBeamSettings,
                 LoopCountGroup.nBeamstopSettings,
                 LoopCountGroup.nCrystals
-        } ) );
+        } );
 }

@@ -19,14 +19,15 @@ import java.util.List;
 import java.util.Set;
 
 import co.gphl.common.namelist.F90NamelistGroup;
+import co.gphl.common.namelist.VarnameComparator;
 import co.gphl.common.namelist.impl.F90NamelistGroupImpl;
 
 @SuppressWarnings("serial")
 public abstract class GcalInstrumentGroup extends F90NamelistGroupImpl implements
         F90NamelistGroup {
 
-    protected GcalInstrumentGroup(List<String> varnameOrder, Set<String> charVarnames, Integer lineNo) {
-        super(varnameOrder, charVarnames, lineNo);
+    protected GcalInstrumentGroup(VarnameComparator varnameComparator, Set<String> charVarnames, Integer lineNo) {
+        super(varnameComparator, charVarnames, lineNo);
     }
 
     public static final String twoThetaAxis = "TWO_THETA_AXIS";
@@ -39,8 +40,7 @@ public abstract class GcalInstrumentGroup extends F90NamelistGroupImpl implement
     public static final String trans3Axis = "TRANS_3_AXIS";
     public static final String beam = "BEAM";
     
-    protected static final List<String> varnameOrder = Collections.unmodifiableList(
-        Arrays.asList(new String [] {
+    protected static final String[] varnameOrder = new String [] {
                 GcalInstrumentGroup.twoThetaAxis,
                 GcalInstrumentGroup.omegaAxis,
                 GcalInstrumentGroup.kappaAxis,
@@ -50,8 +50,7 @@ public abstract class GcalInstrumentGroup extends F90NamelistGroupImpl implement
                 GcalInstrumentGroup.trans2Axis,
                 GcalInstrumentGroup.trans3Axis,
                 GcalInstrumentGroup.beam
-               } )
-        );
+    };
     
     // Added by hand
     public static final List<String> rotAxisOrder =

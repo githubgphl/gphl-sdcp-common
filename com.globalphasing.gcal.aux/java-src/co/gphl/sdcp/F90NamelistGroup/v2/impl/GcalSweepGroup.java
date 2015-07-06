@@ -16,18 +16,18 @@ package co.gphl.sdcp.F90NamelistGroup.v2.impl;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import co.gphl.common.namelist.F90NamelistGroup;
+import co.gphl.common.namelist.VarnameComparator;
 import co.gphl.common.namelist.impl.F90NamelistGroupImpl;
 
 @SuppressWarnings("serial")
 public abstract class GcalSweepGroup
     extends F90NamelistGroupImpl implements F90NamelistGroup {
 
-    public GcalSweepGroup( List<String> varnameOrder, Set<String> charVarnames, Integer lineNo ) {
-        super(varnameOrder, charVarnames, lineNo);
+    public GcalSweepGroup( VarnameComparator varnameComparator, Set<String> charVarnames, Integer lineNo ) {
+        super(varnameComparator, charVarnames, lineNo);
     }
     
     public static final String goniostatSettingId = "GONIOSTAT_SETTING_ID";
@@ -37,15 +37,15 @@ public abstract class GcalSweepGroup
     public static final String beamstopSettingId = "BEAMSTOP_SETTING_ID";
     public static final String startDeg = "START_DEG";
 
-    protected static final List<String> varnameOrder = Collections.unmodifiableList(
-        Arrays.asList(new String [] {
+    protected static final String[] varnameOrder =
+        new String [] {
                 GcalSweepGroup.goniostatSettingId,
                 GcalSweepGroup.centredGoniostatSettingId,
                 GcalSweepGroup.beamSettingId,
                 GcalSweepGroup.detectorSettingId,
                 GcalSweepGroup.beamstopSettingId,
                 GcalSweepGroup.startDeg
-        } ) );
+        };
 
     protected static final Set<String> charVarnames = Collections.unmodifiableSet(
         new HashSet<String>(
@@ -57,4 +57,6 @@ public abstract class GcalSweepGroup
                         GcalSweepGroup.beamstopSettingId,
                 } ) ) );
     
+    protected static final VarnameComparator varnameComparator = 
+            new VarnameComparator(GcalSweepGroup.varnameOrder);
 }

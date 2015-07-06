@@ -20,6 +20,7 @@ import co.gphl.common.namelist.F90NamelistData;
 import co.gphl.common.namelist.F90NamelistGroup;
 import co.gphl.common.namelist.F90NamelistValueException;
 import co.gphl.common.namelist.NamelistGroup;
+import co.gphl.common.namelist.VarnameComparator;
 
 public abstract class F90NamelistGroupImpl 
 extends AbstractNamelistGroupImpl 
@@ -31,8 +32,8 @@ implements F90NamelistGroup {
     private static final long serialVersionUID = 1758046791779837267L;
     private F90NamelistData owningData = null;
 
-    protected F90NamelistGroupImpl( List<String> varnameOrder, Set<String> charVarnames, Integer lineNo) {
-        super(varnameOrder, charVarnames, lineNo);
+    protected F90NamelistGroupImpl( VarnameComparator varnameComparator, Set<String> charVarnames, Integer lineNo) {
+        super(varnameComparator, charVarnames, lineNo);
         this.maxLineLen = 70;
     }
 

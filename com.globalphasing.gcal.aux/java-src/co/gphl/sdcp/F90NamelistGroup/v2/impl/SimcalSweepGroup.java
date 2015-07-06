@@ -14,13 +14,14 @@ import java.util.List;
 import java.util.Set;
 
 import co.gphl.common.namelist.F90NamelistGroup;
+import co.gphl.common.namelist.VarnameComparator;
 
 @SuppressWarnings("serial")
 public final class SimcalSweepGroup
     extends GcalSweepGroup implements F90NamelistGroup {
    
     public SimcalSweepGroup(Integer lineNo) {
-       super(SimcalSweepGroup.varnameOrder, SimcalSweepGroup.charVarnames, lineNo);
+       super(SimcalSweepGroup.varnameComparator, SimcalSweepGroup.charVarnames, lineNo);
     }
    
     public static final String groupName = "SIMCAL_SWEEP_LIST";
@@ -43,23 +44,20 @@ public final class SimcalSweepGroup
     public static final String nameTemplate              = "NAME_TEMPLATE";
     public static final String resLimit                  = "RES_LIMIT";
     
-    private static final List<String> _varnameOrder =
-            new ArrayList<String>(GcalSweepGroup.varnameOrder);
-    static {
-        SimcalSweepGroup._varnameOrder.addAll(
-            Arrays.asList(
-                new String[] {
-                        SimcalSweepGroup.exposure,
-                        SimcalSweepGroup.stepDeg,
-                        SimcalSweepGroup.nFrames,
-                        SimcalSweepGroup.imageNo,
-                        SimcalSweepGroup.nameTemplate,
-                        SimcalSweepGroup.resLimit                        
-                } ) );
-    }
     private static final List<String> varnameOrder =
-            Collections.unmodifiableList(SimcalSweepGroup._varnameOrder);
-
+            new ArrayList<String>( Arrays.asList(GcalSweepGroup.varnameOrder) );
+    static {
+        SimcalSweepGroup.varnameOrder.add(SimcalSweepGroup.exposure);
+        SimcalSweepGroup.varnameOrder.add(SimcalSweepGroup.stepDeg);
+        SimcalSweepGroup.varnameOrder.add(SimcalSweepGroup.nFrames);
+        SimcalSweepGroup.varnameOrder.add(SimcalSweepGroup.imageNo);
+        SimcalSweepGroup.varnameOrder.add(SimcalSweepGroup.nameTemplate);
+        SimcalSweepGroup.varnameOrder.add(SimcalSweepGroup.resLimit);
+    }
+            
+    private static final VarnameComparator varnameComparator =
+            new VarnameComparator(SimcalSweepGroup.varnameOrder);
+    
     private static final Set<String> _charVarnames =
             new HashSet<String>(GcalSweepGroup.charVarnames);
     static {

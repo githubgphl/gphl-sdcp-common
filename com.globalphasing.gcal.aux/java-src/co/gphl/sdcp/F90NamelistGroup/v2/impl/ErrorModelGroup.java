@@ -6,10 +6,7 @@
 
 package co.gphl.sdcp.F90NamelistGroup.v2.impl;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
+import co.gphl.common.namelist.VarnameComparator;
 import co.gphl.common.namelist.F90NamelistGroup;
 import co.gphl.common.namelist.impl.F90NamelistGroupImpl;
 
@@ -18,7 +15,7 @@ public final class ErrorModelGroup
     extends F90NamelistGroupImpl implements F90NamelistGroup {
    
     public ErrorModelGroup(Integer lineNo) {
-       super(ErrorModelGroup.varnameOrder, null, lineNo);
+       super(ErrorModelGroup.varnameComparator, null, lineNo);
     }
    
     public static final String groupName = "ERROR_MODEL_LIST";
@@ -34,12 +31,12 @@ public final class ErrorModelGroup
     public static final String minZeta    = "MIN_ZETA";
     public static final String minLorentz = "MIN_LORENTZ";
 
-    private static final List<String> varnameOrder = Collections.unmodifiableList(
-        Arrays.asList(new String [] {
+    private static final VarnameComparator varnameComparator = 
+        new VarnameComparator(new String [] {
                 ErrorModelGroup.background,
                 ErrorModelGroup.beamSdDeg,
                 ErrorModelGroup.lambdaSd,
                 ErrorModelGroup.minZeta,
                 ErrorModelGroup.minLorentz
-        } ) );
+        } );
 }

@@ -9,9 +9,9 @@ package co.gphl.sdcp.F90NamelistGroup.v2.impl;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
+import co.gphl.common.namelist.VarnameComparator;
 import co.gphl.common.namelist.F90NamelistGroup;
 import co.gphl.common.namelist.impl.F90NamelistGroupImpl;
 
@@ -20,7 +20,7 @@ public final class BeamstopSettingGroup
     extends F90NamelistGroupImpl implements F90NamelistGroup {
    
     public BeamstopSettingGroup(Integer lineNo) {
-       super(BeamstopSettingGroup.varnameOrder, BeamstopSettingGroup.charVarnames, lineNo);
+       super(BeamstopSettingGroup.varnameComparator, BeamstopSettingGroup.charVarnames, lineNo);
     }
    
     public static final String groupName = "BEAMSTOP_SETTING_LIST";
@@ -35,13 +35,13 @@ public final class BeamstopSettingGroup
     public static final String beamStopSLength   = "BEAM_STOP_S_LENGTH";
     public static final String beamStopSDistance = "BEAM_STOP_S_DISTANCE";
 
-    private static final List<String> varnameOrder = Collections.unmodifiableList(
-        Arrays.asList(new String [] {
+    private static final VarnameComparator varnameComparator = 
+        new VarnameComparator(new String [] {
                 BeamstopSettingGroup.id,
                 BeamstopSettingGroup.beamStopRadius,
                 BeamstopSettingGroup.beamStopSLength,
                 BeamstopSettingGroup.beamStopSDistance
-        } ) );
+        } );
 
     private static final Set<String> charVarnames = Collections.unmodifiableSet(
         new HashSet<String>(

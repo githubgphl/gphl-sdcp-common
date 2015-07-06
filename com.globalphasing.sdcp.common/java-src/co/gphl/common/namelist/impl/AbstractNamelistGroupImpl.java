@@ -15,10 +15,6 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +25,7 @@ import co.gphl.common.namelist.AbstractKeyList;
 import co.gphl.common.namelist.NamelistGroup;
 import co.gphl.common.namelist.F90NamelistValueException;
 import co.gphl.common.namelist.ValueType;
+import co.gphl.common.namelist.VarnameComparator;
 
 /**
  * @author pkeller
@@ -42,55 +39,6 @@ public abstract class AbstractNamelistGroupImpl
      * 
      */
     private static final long serialVersionUID = -1132029170103736118L;
-
-    protected static class VarnameComparator implements Comparator<String> {
-        
-        protected VarnameComparator( List<String> varnames ) {
-            this.varnames = varnames;
-        }
-        
-        private List<String> varnames;
-        
-        @Override
-        public int compare(String arg0, String arg1) {
-            
-            int idx0 = -1, idx1 = -1 ;
-            
-            if ( varnames != null ) {
-                idx0 = varnames.indexOf(arg0.toUpperCase());
-                idx1 = varnames.indexOf(arg1.toUpperCase());;
-            }
-            
-            if ( idx0 > -1 ) {
-                if ( idx1 > -1 )
-                    return idx0 - idx1;
-                else
-                    return -1;
-            }
-            else {
-                if ( idx1 > -1 )
-                    return 1;
-                else
-                    return arg0.compareToIgnoreCase(arg1);
-            }
-        }
-    }
-    
-    private static Map<String, Set<String>> varnames = null;
-    
-    private static Map<String, Set<String>> charVarnames = null;
-    
-    private Set<String> getCharVarnames() {
-
-        Set<String> retval = null;
-
-        if (this.className != null)
-            retval = AbstractNamelistGroupImpl.charVarnames == null ? 
-                    null : AbstractNamelistGroupImpl.charVarnames.get(this.className);
-
-        return retval;
-
-    }
     
     // regex that matches the end of a value.
     // It may also match in the middle of a value: it is up to the particular
@@ -106,61 +54,46 @@ public abstract class AbstractNamelistGroupImpl
     // Approximate maximum line length on output.
     protected int maxLineLen;
     
+    // For now, set version of namelist data explicitly (keyList/comparator/charVarnames
+    // can legitimately all be null)
+    private int namelistVersion;
+    
     // Keep track of this explicitly, so we don't have to keep
     // fishing it back from the TreeMap and casting it.
+    // keyList is for v1 namelists (will soon be removed),
+    // comparator/charVarnames is for v2 namelists.
     private AbstractKeyList keyList;
-    
-    // Make sure that we only derive this once for each instance: it is used
-    // to key into static maps.
-    // We can also use this and keyList to distinguish between v1 and v2
-    // namelist group instances: keyList is set for v1 instances, className for v2 ones
-    private String className = null;
-    
+    private VarnameComparator comparator = null;
+    private Set<String> charVarnames = null;
     
     /**
-     * Constructor for namelist groups that use a {@link List} and
+     * Constructor for namelist groups that use a {@link VarnameComparator} and
      * a {@link Set} to define the ordering of variable names and which
      * variables hold string data.
      * 
-     * @param varnameOrder
+     * @param varnameComparator
      * @param charVarnames
      * @param lineNo
      */
-    protected AbstractNamelistGroupImpl ( List<String> varnameOrder, 
+    protected AbstractNamelistGroupImpl ( VarnameComparator comparator, 
                                           Set<String> charVarnames,
                                           Integer lineNo) {
-        this(varnameOrder);
+        super(comparator);
+        this.comparator = comparator;
+        this.charVarnames = charVarnames;
         this.lineNo = lineNo;
-        this.className = this.getClass().getCanonicalName();
-        
-        if ( varnameOrder != null ) {
-            
-            if ( AbstractNamelistGroupImpl.varnames == null )
-                AbstractNamelistGroupImpl.varnames = new HashMap< String, Set<String> >();
-            
-            if ( ! AbstractNamelistGroupImpl.varnames.containsKey(this.className) )
-                AbstractNamelistGroupImpl.varnames.put(className, 
-                    Collections.unmodifiableSet( new HashSet<String>(varnameOrder) ) );
-        }
-
-        if ( charVarnames != null ) {
-            
-            if ( AbstractNamelistGroupImpl.charVarnames == null )
-                AbstractNamelistGroupImpl.charVarnames = new HashMap<String, Set<String>>();
-            
-            if ( ! AbstractNamelistGroupImpl.charVarnames.containsKey(className) )
-                AbstractNamelistGroupImpl.charVarnames.put(className, charVarnames);
-        }
-        
-    }
-    
-    private AbstractNamelistGroupImpl ( List<String> varnameOrder ) {
-        super( new VarnameComparator(varnameOrder) );
+        this.namelistVersion = 2;
     }
     
     protected AbstractNamelistGroupImpl(AbstractKeyList keyList) {
         super(keyList);
         this.keyList = keyList;
+        this.namelistVersion = 1;
+    }
+
+    public AbstractNamelistGroupImpl ( AbstractKeyList keyList, int lineNo ) {
+        this(keyList);
+        this.lineNo = lineNo;
     }
 
     protected AbstractNamelistGroupImpl ( NamelistGroup group ) {
@@ -176,14 +109,15 @@ public abstract class AbstractNamelistGroupImpl
     @Override
     public Boolean accepts(String keyName) {
         
-        if ( this.className != null ) 
+        if ( this.namelistVersion == 2 ) 
             // v2 namelist group: check comparator
-            return AbstractNamelistGroupImpl.varnames == null ?
-                    null : AbstractNamelistGroupImpl.varnames.get(this.className).contains(keyName);
-        else
+            return this.comparator == null ? null : this.comparator.contains(keyName);
+        else if ( this.namelistVersion == 1 )
             // v1 namelist group. Get rid of this when transition to v2 is complete.
             return this.keyList == null ? null : this.keyList.contains(keyName.toUpperCase());
-    }
+        else
+            throw new IllegalStateException("Illegal namelist version number " + this.namelistVersion);
+    } 
     
     /**
      * If this method returns true, the namelist group allows
@@ -387,7 +321,6 @@ public abstract class AbstractNamelistGroupImpl
     
     public void write(Writer writer, String valueSeparator) throws IOException {
 
-    	Set<String> charVarnames = this.getCharVarnames();
         // We use an iterator to loop over namelist group variables,
         // so that we can query the hasNext() method inside the loop
         Iterator< Map.Entry<String, String[]> > iter = this.entrySet().iterator();
@@ -470,6 +403,11 @@ public abstract class AbstractNamelistGroupImpl
     @Override
     public String[] get(String varName) {
     	return super.get(varName);
+    }
+    
+    @Override
+    public VarnameComparator comparator() {
+        return this.comparator;
     }
     
 }

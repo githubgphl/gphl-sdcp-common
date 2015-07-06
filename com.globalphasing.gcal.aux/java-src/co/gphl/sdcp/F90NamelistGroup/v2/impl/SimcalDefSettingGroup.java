@@ -9,9 +9,9 @@ package co.gphl.sdcp.F90NamelistGroup.v2.impl;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
+import co.gphl.common.namelist.VarnameComparator;
 import co.gphl.common.namelist.F90NamelistGroup;
 import co.gphl.common.namelist.impl.F90NamelistGroupImpl;
 
@@ -20,7 +20,7 @@ public final class SimcalDefSettingGroup
     extends F90NamelistGroupImpl implements F90NamelistGroup {
    
     public SimcalDefSettingGroup(Integer lineNo) {
-       super(SimcalDefSettingGroup.varnameOrder, SimcalDefSettingGroup.charVarnames, lineNo);
+       super(SimcalDefSettingGroup.varnameComparator, SimcalDefSettingGroup.charVarnames, lineNo);
     }
    
     public static final String groupName = "SIMCAL_DEF_SETTING_LIST";
@@ -39,8 +39,8 @@ public final class SimcalDefSettingGroup
     public static final String muSensor                  = "MU_SENSOR";
     public static final String exposure                  = "EXPOSURE";
 
-    private static final List<String> varnameOrder = Collections.unmodifiableList(
-        Arrays.asList(new String [] {
+    private static final VarnameComparator varnameComparator = 
+        new VarnameComparator(new String [] {
                 SimcalDefSettingGroup.goniostatSettingId,
                 SimcalDefSettingGroup.centredGoniostatSettingId,
                 SimcalDefSettingGroup.beamSettingId,
@@ -49,7 +49,7 @@ public final class SimcalDefSettingGroup
                 SimcalDefSettingGroup.muAir,
                 SimcalDefSettingGroup.muSensor,
                 SimcalDefSettingGroup.exposure
-        } ) );
+        } );
 
     private static final Set<String> charVarnames = Collections.unmodifiableSet(
         new HashSet<String>(

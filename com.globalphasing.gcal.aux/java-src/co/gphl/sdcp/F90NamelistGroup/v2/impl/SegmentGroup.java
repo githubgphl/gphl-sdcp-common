@@ -6,10 +6,7 @@
 
 package co.gphl.sdcp.F90NamelistGroup.v2.impl;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
+import co.gphl.common.namelist.VarnameComparator;
 import co.gphl.common.namelist.F90NamelistGroup;
 import co.gphl.common.namelist.impl.F90NamelistGroupImpl;
 
@@ -18,7 +15,7 @@ public final class SegmentGroup
     extends F90NamelistGroupImpl implements F90NamelistGroup {
    
     public SegmentGroup(Integer lineNo) {
-       super(SegmentGroup.varnameOrder, null, lineNo);
+       super(SegmentGroup.varnameComparator, null, lineNo);
     }
    
     public static final String groupName = "SEGMENT_LIST";
@@ -36,8 +33,8 @@ public final class SegmentGroup
     public static final String segOrgY     = "SEG_ORG_Y";
     public static final String segCoord    = "SEG_COORD";
 
-    private static final List<String> varnameOrder = Collections.unmodifiableList(
-        Arrays.asList(new String [] {
+    private static final VarnameComparator varnameComparator = 
+        new VarnameComparator(new String [] {
                 SegmentGroup.segXAxis,
                 SegmentGroup.segYAxis,
                 SegmentGroup.segNxLimits,
@@ -45,5 +42,5 @@ public final class SegmentGroup
                 SegmentGroup.segOrgX,
                 SegmentGroup.segOrgY,
                 SegmentGroup.segCoord
-        } ) );
+        } );
 }

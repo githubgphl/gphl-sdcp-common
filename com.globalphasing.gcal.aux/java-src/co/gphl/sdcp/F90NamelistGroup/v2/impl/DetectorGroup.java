@@ -9,9 +9,9 @@ package co.gphl.sdcp.F90NamelistGroup.v2.impl;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
+import co.gphl.common.namelist.VarnameComparator;
 import co.gphl.common.namelist.F90NamelistGroup;
 import co.gphl.common.namelist.impl.F90NamelistGroupImpl;
 
@@ -20,7 +20,7 @@ public final class DetectorGroup
     extends F90NamelistGroupImpl implements F90NamelistGroup {
    
     public DetectorGroup(Integer lineNo) {
-       super(DetectorGroup.varnameOrder, DetectorGroup.charVarnames, lineNo);
+       super(DetectorGroup.varnameComparator, DetectorGroup.charVarnames, lineNo);
     }
    
     public static final String groupName = "DETECTOR_LIST";
@@ -42,8 +42,8 @@ public final class DetectorGroup
     public static final String dSensor  = "D_SENSOR";
     public static final String detName  = "DET_NAME";
 
-    private static final List<String> varnameOrder = Collections.unmodifiableList(
-        Arrays.asList(new String [] {
+    private static final VarnameComparator varnameComparator = 
+        new VarnameComparator(new String [] {
                 DetectorGroup.detXAxis,
                 DetectorGroup.detYAxis,
                 DetectorGroup.detQx,
@@ -55,7 +55,7 @@ public final class DetectorGroup
                 DetectorGroup.gain,
                 DetectorGroup.dSensor,
                 DetectorGroup.detName
-        } ) );
+        } );
 
     private static final Set<String> charVarnames = Collections.unmodifiableSet(
         new HashSet<String>(

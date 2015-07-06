@@ -9,9 +9,9 @@ package co.gphl.sdcp.F90NamelistGroup.v2.impl;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
+import co.gphl.common.namelist.VarnameComparator;
 import co.gphl.common.namelist.F90NamelistGroup;
 import co.gphl.common.namelist.impl.F90NamelistGroupImpl;
 
@@ -20,7 +20,7 @@ public final class SimcalBeamSettingGroup
     extends F90NamelistGroupImpl implements F90NamelistGroup {
    
     public SimcalBeamSettingGroup(Integer lineNo) {
-       super(SimcalBeamSettingGroup.varnameOrder, SimcalBeamSettingGroup.charVarnames, lineNo);
+       super(SimcalBeamSettingGroup.varnameComparator, SimcalBeamSettingGroup.charVarnames, lineNo);
     }
    
     public static final String groupName = "SIMCAL_BEAM_SETTING_LIST";
@@ -35,13 +35,13 @@ public final class SimcalBeamSettingGroup
     public static final String muAir    = "MU_AIR";
     public static final String muSensor = "MU_SENSOR";
 
-    private static final List<String> varnameOrder = Collections.unmodifiableList(
-        Arrays.asList(new String [] {
+    private static final VarnameComparator varnameComparator = 
+        new VarnameComparator(new String [] {
                 SimcalBeamSettingGroup.id,
                 SimcalBeamSettingGroup.lambda,
                 SimcalBeamSettingGroup.muAir,
                 SimcalBeamSettingGroup.muSensor
-        } ) );
+        } );
 
     private static final Set<String> charVarnames = Collections.unmodifiableSet(
         new HashSet<String>(

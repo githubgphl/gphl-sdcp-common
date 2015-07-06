@@ -9,9 +9,9 @@ package co.gphl.sdcp.F90NamelistGroup.v2.impl;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
+import co.gphl.common.namelist.VarnameComparator;
 import co.gphl.common.namelist.F90NamelistGroup;
 import co.gphl.common.namelist.impl.F90NamelistGroupImpl;
 
@@ -20,7 +20,7 @@ public final class GoniostatSettingGroup
     extends F90NamelistGroupImpl implements F90NamelistGroup {
    
     public GoniostatSettingGroup(Integer lineNo) {
-       super(GoniostatSettingGroup.varnameOrder, GoniostatSettingGroup.charVarnames, lineNo);
+       super(GoniostatSettingGroup.varnameComparator, GoniostatSettingGroup.charVarnames, lineNo);
     }
    
     public static final String groupName = "GONIOSTAT_SETTING_LIST";
@@ -38,8 +38,8 @@ public final class GoniostatSettingGroup
     public static final String scanAxisNo              = "SCAN_AXIS_NO";
     public static final String alignedCrystalAxisOrder = "ALIGNED_CRYSTAL_AXIS_ORDER";
 
-    private static final List<String> varnameOrder = Collections.unmodifiableList(
-        Arrays.asList(new String [] {
+    private static final VarnameComparator varnameComparator = 
+        new VarnameComparator(new String [] {
                 GoniostatSettingGroup.id,
                 GoniostatSettingGroup.omegaDeg,
                 GoniostatSettingGroup.kappaDeg,
@@ -47,7 +47,7 @@ public final class GoniostatSettingGroup
                 GoniostatSettingGroup.spindleDeg,
                 GoniostatSettingGroup.scanAxisNo,
                 GoniostatSettingGroup.alignedCrystalAxisOrder
-        } ) );
+        } );
 
     private static final Set<String> charVarnames = Collections.unmodifiableSet(
         new HashSet<String>(

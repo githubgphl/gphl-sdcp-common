@@ -14,13 +14,14 @@ import java.util.List;
 import java.util.Set;
 
 import co.gphl.common.namelist.F90NamelistGroup;
+import co.gphl.common.namelist.VarnameComparator;
 
 @SuppressWarnings("serial")
 public final class SimcalCrystalGroup
     extends CrystalGroup implements F90NamelistGroup {
    
     public SimcalCrystalGroup(Integer lineNo) {
-       super(SimcalCrystalGroup.varnameOrder, SimcalCrystalGroup.charVarnames, lineNo);
+       super(SimcalCrystalGroup.varnameComparator, SimcalCrystalGroup.charVarnames, lineNo);
     }
    
     public static final String groupName = "SIMCAL_CRYSTAL_LIST";
@@ -47,22 +48,21 @@ public final class SimcalCrystalGroup
     public static final String bWilson       = "B_WILSON";
     public static final String b6Wilson      = "B6_WILSON";
 
-    private static final List<String> _varnameOrder = new ArrayList<String>(CrystalGroup.varnameOrder);
-    static {
-        SimcalCrystalGroup._varnameOrder.addAll(
-            Arrays.asList( new String[] {
-                    SimcalCrystalGroup.cellRefAngDeg,
-                    SimcalCrystalGroup.cellDimSd,
-                    SimcalCrystalGroup.cellAngSdDeg,
-                    SimcalCrystalGroup.uMatSdDeg,
-                    SimcalCrystalGroup.sigmaN,
-                    SimcalCrystalGroup.bWilson,
-                    SimcalCrystalGroup.b6Wilson } )
-            );
-    }
     private static final List<String> varnameOrder =
-            Collections.unmodifiableList(_varnameOrder);
-    
+            new ArrayList<String>( Arrays.asList(CrystalGroup.varnameOrder) ) ;
+
+    static{
+        SimcalCrystalGroup.varnameOrder.add(SimcalCrystalGroup.cellRefAngDeg);
+        SimcalCrystalGroup.varnameOrder.add(SimcalCrystalGroup.cellDimSd);
+        SimcalCrystalGroup.varnameOrder.add(SimcalCrystalGroup.cellAngSdDeg);
+        SimcalCrystalGroup.varnameOrder.add(SimcalCrystalGroup.uMatSdDeg);
+        SimcalCrystalGroup.varnameOrder.add(SimcalCrystalGroup.sigmaN);
+        SimcalCrystalGroup.varnameOrder.add(SimcalCrystalGroup.bWilson);
+        SimcalCrystalGroup.varnameOrder.add(SimcalCrystalGroup.b6Wilson);
+    }
+
+    private static final VarnameComparator varnameComparator =
+            new VarnameComparator(SimcalCrystalGroup.varnameOrder);
     
     private static final Set<String> charVarnames = Collections.unmodifiableSet(
         new HashSet<String>(
