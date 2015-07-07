@@ -40,8 +40,6 @@ public interface F90NamelistData
      */
     public void includeGroups( Set<Class<? extends F90NamelistGroup>> groups );
 
-    public void read(File file) throws IOException;
-    
     // Be very selective about adding methods to this interface from
     // Collection/List. Too many retained references to namelist groups
     // will eventually cause problems.

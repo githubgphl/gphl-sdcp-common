@@ -63,9 +63,9 @@ public abstract class AbstractSimcalInputData extends F90NamelistImpl implements
      * @param builder
      * @throws IOException
      */
-    protected AbstractSimcalInputData(Builder<?> builder) throws IOException{
+    protected AbstractSimcalInputData(Builder<?> builder, File simcal_config) throws IOException{
 
-        super(GcalAuxGroupFactory.factory(), "simcal");
+        super(GcalAuxGroupFactory.factory(), "simcal", simcal_config);
         
         this.hkl_in=builder.hkl_in;
         this.image_root=builder.image_root;
@@ -74,8 +74,7 @@ public abstract class AbstractSimcalInputData extends F90NamelistImpl implements
         this.prefix_key_name=builder.prefix_key_name;
         this.image_filename_end=builder.image_filename_end;
         
-        this.sample = new F90NamelistImpl(GcalAuxGroupFactory.factory());
-        this.sample.read(builder.sample_in);
+        this.sample = new F90NamelistImpl(GcalAuxGroupFactory.factory(), builder.sample_in);
         this.sample_in = builder.sample_in;
     }
     

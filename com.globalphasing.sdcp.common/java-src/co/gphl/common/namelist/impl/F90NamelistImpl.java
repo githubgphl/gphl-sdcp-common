@@ -28,10 +28,10 @@ import co.gphl.common.namelist.F90NamelistGroupFactory;
 import co.gphl.common.namelist.F90NamelistValueException;
 
 /**
- * Class to parse and/or output basic Fortran90 namelist input.<p>
+ * Class to parse and/or output basic Fortran90 namelist input.
  * 
- * It will not handle the full flexibility allowed by namelist input. It has the
- * following restrictions:
+ * <p>It will not handle the full flexibility allowed by namelist input. It has the
+ * following restrictions:</p>
  * 
  * <ul>
  * <li>{@code &<namelist_group_name>} must be on a line by itself.</li>
@@ -48,26 +48,27 @@ import co.gphl.common.namelist.F90NamelistValueException;
  * expressions are not interpreted.</li>
  * </ul>
  * 
- * N.B. The restriction in earlier versions of this class that a name-value
- * subsequence cannot be split across multiple lines has been removed.
+ * <p>N.B. The restriction in earlier versions of this class that a name-value
+ * subsequence cannot be split across multiple lines has been removed.</p>
  * 
- * To create namelist data by reading from a file, a typical usage pattern is:
+ * <p>To create namelist data by reading from a file, a typical usage pattern is:</p>
  * 
  * <pre>
- *    F90NamelistImpl namelistData = new F90NamelistImpl(GcalAuxGroupFactory.factory());
- *    namelistData.read(new File("filename.txt"));
+ *    F90NamelistData namelistData =
+ *        new F90NamelistImpl(GcalAuxGroupFactory.factory(),
+ *                            new File("filename.nml"));
  * </pre>
  * 
- * To create namelist data programmatically, with the intention of writing
- * it out to a file, a typical pattern is:
+ * <p>To create namelist data programmatically, with the intention of writing
+ * it out to a file, a typical pattern is:</p>
  * 
  * <pre>
- *    F90NamelistImpl namelistData = new F90NamelistImpl("simcal");
+ *    F90NamelistData namelistData = new F90NamelistImpl("simcal");
  *    F90NamelistGroup loopCounts = new LoopCountGroup(null);
  *    ...        
  *    namelistData.add(loopCounts);
  *    ....
- *    namelistData.write(new File("filename.txt"));
+ *    namelistData.write(new File("filename.nml"));
  * </pre>
  * 
  * @author Peter Keller
@@ -77,8 +78,8 @@ public class F90NamelistImpl
 	extends ArrayList< F90NamelistGroup >
 	implements F90NamelistData {
 
-	private File nlFile = null;
-	private LineNumberReader reader = null;
+	protected File nlFile = null;
+	private boolean reading;
 	private int curLineNumber = 0;
 	
 	private String appName = null;
@@ -112,34 +113,81 @@ public class F90NamelistImpl
     }
     
     /**
-     * Creates new empty instance, suitable for populating by reading namelist
-     * formatted data or by {@link #newNamelistGroup(String, Integer, boolean)}.
+     * Creates new empty instance, suitable for populating programatically with
+     * {@link F90NamelistGroup} instances. The {@code factory} argument
+     * is used by the {@link #newNamelistGroup(String, Integer, boolean)} method.
      * 
      * @param factory namelist group factory to be used to create {@link F90NamelistGroup}
-     * instances when reading namelist-format data from files.
+     * instances when namelist groups are identified by strings containing their F90 names.
      * @throws IllegalArgumentException if {@code factory == null}
      */
     public F90NamelistImpl( F90NamelistGroupFactory factory ) {
-        this(factory, null);
+        if ( factory == null )
+            throw new IllegalArgumentException("Must specify a namelist group factory");
+        this.nlgFactory = factory;
     }
     
     /**
-     * Creates new empty instance, suitable for populating by reading namelist
-     * formatted data.
+     * Creates new empty instance, suitable for populating programatically with
+     * {@link F90NamelistGroup} instances. The {@code factory} argument
+     * is used by the {@link #newNamelistGroup(String, Integer, boolean)} method.
      * 
      * @param factory namelist group factory to be used to create {@link F90NamelistGroup}
-     * instances when reading namelist-format data from files. 
+     * instances when namelist groups are identified by strings containing their F90 names.
      * @param appName application name. Not currently used.
      * @throws IllegalArgumentException if {@code factory == null}
      */
     public F90NamelistImpl( F90NamelistGroupFactory factory, String appName ) {
-        if ( factory == null )
-            throw new IllegalArgumentException("Must specify a namelist group factory");
+        this(factory);
         this.appName = ( appName == null ? "" : appName.toLowerCase() );
-        this.nlgFactory = factory;
     }
-	
-	/**
+    
+    
+    /**
+     * Instantiates new F90Namelist instance by reading namelist-formatted data from a file.
+     * 
+     * @param factory namelist group factory for mapping namelist group names to their
+     * corresponding Java types
+     * @param appName application name. Not currently used.
+     * @param nlFile file containing namelist-formatted data
+     * @throws IOException
+     * @throws IllegalArgumentException if {@code factory == null}, if {@code nlFile == null}
+     * or {@code nlFile} does not exist or is zero length.
+     */
+    public F90NamelistImpl( F90NamelistGroupFactory factory, String appName, File nlFile )
+    throws IOException
+    {
+        this(factory, appName);
+        
+        if ( nlFile == null )
+            throw new IllegalArgumentException("nlFile argument must not be null");
+        if ( nlFile.length() == 0L )
+            throw new IllegalArgumentException("File " + nlFile.toString() + " is zero length or does not exist");
+        
+        this.nlFile = nlFile;
+        this.read();
+        
+    }
+    
+    /**
+     * Instantiates new F90Namelist instance by reading namelist-formatted data from a file.
+     * Calls {@link #F90NamelistImpl(F90NamelistGroupFactory, String, File)} with {@code null}
+     * as the second argument
+     * 
+     * @param factory namelist group factory for mapping namelist group names to their
+     * corresponding Java types
+     * @param nlFile file containing namelist-formatted data
+     * @throws IOException
+     * @throws IllegalArgumentException if {@code factory == null}, if {@code nlFile == null}
+     * or {@code nlFile} does not exist or is zero length.
+     */
+    public F90NamelistImpl( F90NamelistGroupFactory factory, File nlFile )
+    throws IOException
+    {
+        this(factory, null, nlFile);        
+    }
+
+    /**
 	 * Populates empty instance from the contents of a namelist file.
 	 * Throws a RuntimeException if size of instance is not zero
 	 * or the instance does not have a factory defined.
@@ -147,29 +195,26 @@ public class F90NamelistImpl
 	 * @param nlFile File containing namelist input
 	 * @throws IOException
 	 */
-    @Override
-	public void read (File nlFile) throws IOException {
+	protected void read () throws IOException {
 
 	    if ( this.size() > 0 )
 	        throw new RuntimeException("The read method should only be called on an empty instance");
-	    
-	    // FIXME! make read method private, and shift nlFile to constructor arg together with factory
-	    if ( this.nlgFactory == null )
-	        throw new RuntimeException("Factory must have been defined to call read method");
-	    
-		this.nlFile = nlFile;
 
+	    LineNumberReader reader = null;
+	    this.reading = false;
+	    
 		try {
 
-			this.reader = new LineNumberReader ( new FileReader(nlFile) );
+		    reader = new LineNumberReader ( new FileReader(this.nlFile) );
+		    this.reading = true;
 
 			String[] nameValue;
 			F90NamelistGroup curGroup = null;
 
 			String varName = null, valueList = null;
 
-			for ( String line = nextSignificantLine(this.reader); line != null;
-			        line = nextSignificantLine(this.reader) ) {
+			for ( String line = nextSignificantLine(reader); line != null;
+			        line = nextSignificantLine(reader) ) {
 				
                 this.curLineNumber = reader.getLineNumber();
 			    			    
@@ -249,8 +294,7 @@ public class F90NamelistImpl
 		finally {
 			if ( reader != null )
 				reader.close();
-			this.nlFile = null;
-			this.reader = null;
+			this.reading = false;
 			curLineNumber = 0;
 		}
 	}
@@ -293,7 +337,7 @@ public class F90NamelistImpl
 	}
 	
 	private String errorMessage ( String msg ) {
-		if ( this.reader != null ) {
+		if ( this.reading ) {
 			return  "\n  " + this.nlFile.getAbsolutePath() + 
 					": bad namelist data at line " + 
 					String.valueOf( this.curLineNumber ) + ". " + msg ;

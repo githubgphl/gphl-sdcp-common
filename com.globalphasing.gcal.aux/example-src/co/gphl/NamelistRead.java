@@ -15,8 +15,7 @@ public class NamelistRead {
         if ( args.length != 1 )
             throw new RuntimeException("Need input filename as argument");
 
-        F90NamelistData data = new F90NamelistImpl( GcalAuxGroupFactory.factory() );
-        data.read( new File(args[0]));
+        F90NamelistData data = new F90NamelistImpl( GcalAuxGroupFactory.factory(), new File(args[0]) );
         
         for ( int i = 0; i < data.size(); i++ ) {
             F90NamelistGroup group = data.get(i);
