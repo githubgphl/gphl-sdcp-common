@@ -109,21 +109,23 @@ public abstract class ParameterisedUrl {
     }
     
     protected String getNamedParam( String paramName, boolean required ) {
-        List<String> vals = this.params.get(paramName);
+
+        List<String> vals = this.params == null ? null : this.params.get(paramName);
 
         String retval = null;
-        if ( vals != null && vals.size() > 0 )
-            retval = vals.get(0);
+        if ( vals != null ) {
+            if ( vals.size() > 1 )
+                throw new IllegalStateException(
+                    String.format("%d values defined for parameter '%s': we can only handle 1",
+                        vals.size(), paramName) );
+            else if ( vals.size() == 1 )
+                retval = vals.get(0);
+        }
 
         if ( required && ( retval == null || retval.length() == 0 ) )
             throw new IllegalStateException(
                 String.format("No value for parameter '%s' defined. URI is: %s",
                     paramName, this.uri.toString()));
-
-        if ( vals.size() > 1 )
-            throw new IllegalStateException(
-                String.format("%d values defined for parameter '%s': we can only handle 1",
-                    vals.size(), paramName) );
 
         return retval;
 
