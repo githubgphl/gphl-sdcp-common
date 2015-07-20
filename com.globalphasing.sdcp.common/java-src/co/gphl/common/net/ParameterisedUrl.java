@@ -46,7 +46,7 @@ import java.util.Map;
 public abstract class ParameterisedUrl {
 
     protected URI uri;
-    private final Map<String, List<String>> params;
+    private Map<String, List<String>> params;
     
     /**
      * Service URL constructor.
@@ -66,19 +66,22 @@ public abstract class ParameterisedUrl {
         this.uri = url;
         
         // TODO: if any service URLs start to use fragments, extract them here too.
-        
+        if ( ! url.isOpaque() )
+            // We use getRawQuery() rather than getQuery(), so that we can cope with query parameter
+            // names and values containing %-encoded '&' and '=' characters.
+            this.initParams(this.uri.getRawQuery());
+    }
+
+    protected void initParams(String rawQuery) {
         // This handling of queries is inspired by http://stackoverflow.com/a/13592567/1866402
         
         this.params = new HashMap<String, List<String>>();
         
-        // We use getRawQuery() rather than getQuery(), so that we can cope with query parameter
-        // names and values containing %-encoded '&' and '=' characters.
-        String query = this.uri.getRawQuery();
-        if ( query != null && query.length() > 0 ) {
+        if ( rawQuery != null && rawQuery.length() > 0 ) {
 
             try {
 
-                for ( String q: query.split("&") ) {
+                for ( String q: rawQuery.split("&") ) {
 
                     String[] p = q.split("=", 2);
                     
@@ -108,7 +111,30 @@ public abstract class ParameterisedUrl {
         }
     }
     
-    protected String getNamedParam( String paramName, boolean required ) {
+    /**
+     * Return a single value assigned to a parameter in the URI's query string.
+     * 
+     * Note that this implementation considers no value to be assigned to a
+     * parameter {@code param1} for all of the following forms of the URL:
+     * 
+     * <ul>
+     * <li>{@code ?param1&param2=val...}</li>
+     * <li>{@code ?param1=&param2=val...}</li>
+     * <li>{@code ?param2=val...}</li>
+     * </ul>
+     * 
+     * This behaviour may be modified in a future version.
+     * 
+     * @param paramName name of parameter
+     * @param required whether or not a non-null value of the parameter is
+     * required by the caller
+     * @return The value assigned to {@code paramName}, or null if {@code required == false}
+     * and no value has been assigned to the parameter.
+     * 
+     * @throws IllegalStateException if the parameter has been assigned to more than once
+     * or {@code required == true} and no value has been assigned.
+     */
+    public String getNamedParam( String paramName, boolean required ) {
 
         List<String> vals = this.params == null ? null : this.params.get(paramName);
 
@@ -131,8 +157,23 @@ public abstract class ParameterisedUrl {
 
     }
     
+    /** 
+     * Delegate to {@link URI#toString()}
+     * 
+     * @return The string form of this URI
+     */
+    @Override
     public String toString() {
         return this.uri.toString();
+    }
+    
+    /**
+     * Delegate to {@link URI#getRawSchemeSpecificPart()}
+     * 
+     * @return The raw scheme-specific part of this URI (never null)
+     */
+    public String getRawSchemeSpecificPart() {
+        return this.uri.getRawSchemeSpecificPart();
     }
     
 }
