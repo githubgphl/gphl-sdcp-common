@@ -82,7 +82,7 @@ public interface NamelistGroup {
      * for cases where a value may have one or more values</p>
      * 
      * @param varName
-     * @return value (or <code>null</code> if variable has more than one value)
+     * @return value (or {@code null} if variable has no values assigned)
      */
     public String       getStringValue(String varName) throws RuntimeException;
     public Double       getDoubleValue(String varName);
