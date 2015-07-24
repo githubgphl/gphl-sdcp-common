@@ -225,7 +225,7 @@ public class F90NamelistImpl
 								curGroup.getGroupName() + "' not terminated" );
 					}
 					else {
-						curGroup = this.newNamelistGroup(line.substring(1), reader.getLineNumber() - 1, false);
+						curGroup = this.newNamelistGroup(line.substring(1), reader.getLineNumber(), false);
 					}
 				}
 
