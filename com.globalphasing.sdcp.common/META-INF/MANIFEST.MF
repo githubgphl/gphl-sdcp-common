@@ -9,3 +9,4 @@ Export-Package: co.gphl.common.io.logging,
  co.gphl.common.namelist.impl,
  co.gphl.common.net,
  co.gphl.common.threads
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7

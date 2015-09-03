@@ -7,3 +7,4 @@ Export-Package: co.gphl.sdcp.F90Namelist.v2,
  co.gphl.sdcp.F90NamelistGroup.v2.impl,
  co.gphl.sdcp.gcal
 Require-Bundle: com.globalphasing.sdcp.common;bundle-version="1.0.0";visibility:=reexport
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
