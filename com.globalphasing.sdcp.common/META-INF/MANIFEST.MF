@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: Aux
+Bundle-Name: Sdcp Common
 Bundle-SymbolicName: com.globalphasing.sdcp.common
 Bundle-Version: 1.0.0.qualifier
 Export-Package: co.gphl.common.io.logging,
@@ -10,3 +10,4 @@ Export-Package: co.gphl.common.io.logging,
  co.gphl.common.net,
  co.gphl.common.threads
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Bundle-Vendor: GLOBALPHASING
