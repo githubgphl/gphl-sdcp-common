@@ -49,9 +49,12 @@ public class SimcalLauncher extends GcalLauncher implements Serializable {
     // input before we get here.
     public static final String NRAYS = "nrays";
     public static final String BKGND = "background";
+    public static final String SIMMODE = "sim_mode";
+    public static final String BCGMODE = "bcg_mode";
     public static final int DEFNRAYS = 1000;
     public static final double DEFBKGND = 10.0;
-    
+    public static final int DEFSIMMODE = 1;
+    public static final int DEFBCGMODE = -1;
 
     private static Map<String, String> propNames = null;
     private File hkli;

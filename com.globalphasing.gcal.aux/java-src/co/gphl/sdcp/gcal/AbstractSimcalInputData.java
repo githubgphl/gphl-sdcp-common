@@ -118,6 +118,18 @@ public abstract class AbstractSimcalInputData extends F90NamelistImpl implements
             this.errorModelGroup.put( ErrorModelGroup.background, Double.parseDouble(strBkgnd) );
         else
             this.simcalOptionsGroup.put( ErrorModelGroup.background, SimcalLauncher.DEFBKGND);
+        
+        String strSimMode = this.props.getProperty( propNamePrefix + SimcalLauncher.SIMMODE );
+        if ( strSimMode != null && !strSimMode.isEmpty() )
+            this.simcalOptionsGroup.put( SimcalOptionsGroup.simMode, Integer.parseInt(strSimMode) );
+        else
+            this.simcalOptionsGroup.put( SimcalOptionsGroup.simMode, SimcalLauncher.DEFSIMMODE);
+
+        String strBcgMode = this.props.getProperty( propNamePrefix + SimcalLauncher.BCGMODE );
+        if ( strBcgMode != null && !strBcgMode.isEmpty() )
+            this.simcalOptionsGroup.put( SimcalOptionsGroup.bcgMode, Integer.parseInt(strBcgMode) );
+        else
+            this.simcalOptionsGroup.put( SimcalOptionsGroup.bcgMode, SimcalLauncher.DEFBCGMODE);
     }
     
     // See https://weblogs.java.net/blog/emcmanus/archive/2010/10/25/using-builder-pattern-subclasses
