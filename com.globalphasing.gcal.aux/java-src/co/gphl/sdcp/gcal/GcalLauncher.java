@@ -53,6 +53,7 @@ public abstract class GcalLauncher implements Serializable {
     protected final String propNamePrefix, appName;
     protected final Properties properties;
     protected String outfileName;
+    private boolean uniqueFilenames;
     
     private static Map<String, String> propNames = null;
     protected Map<String, String> args = new HashMap<String, String>();
@@ -100,6 +101,12 @@ public abstract class GcalLauncher implements Serializable {
      * GPhL licence file to run.
      */
     public static final String BDG_LICENCE_DIR = "bdg_licence_dir";
+    
+    /**
+     * Name of property used to control whether or not to use {@link File#createTempFile(String, String)}
+     * to generate unique names for the input and output files for this launch.
+     */
+    public static final String UNIQUE_FILENAMES = "unique_filenames";
     
     protected Map<String, String> getPropNames() {
 
@@ -281,6 +288,9 @@ public abstract class GcalLauncher implements Serializable {
         // Change dryrun from current setting if specified
         this.dryrun = propertyTrueFalse(this.propNamePrefix + GcalLauncher.DRYRUN, this.dryrun);
 
+        // Use unique/temporary filenames?
+        this.uniqueFilenames = propertyTrueFalse(this.propNamePrefix + GcalLauncher.UNIQUE_FILENAMES, false);
+        
         // Now setup environment variables and command-line options that are specified
         // in system properties
         String propName, propVal, propArg, oldPropVal;
@@ -361,6 +371,13 @@ public abstract class GcalLauncher implements Serializable {
  
     public String getAppName() {
         return this.appName;
+    }
+    
+    public File newInputFile( File wdir ) throws IOException {
+        if ( this.uniqueFilenames )
+            return File.createTempFile( this.appName + "_", ".in", wdir );
+        else
+            return new File(wdir, this.appName + ".in");
     }
     
 }
