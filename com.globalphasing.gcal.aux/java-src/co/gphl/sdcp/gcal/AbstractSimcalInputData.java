@@ -41,7 +41,7 @@ public abstract class AbstractSimcalInputData extends F90NamelistImpl implements
     
     protected File hkl_in, image_root;
     protected Properties props;
-    protected String subdir_key_name, prefix_key_name, image_filename_end;
+    protected String subdir_key_name;
     File sample_in;
     protected F90NamelistData sample;
     
@@ -71,8 +71,6 @@ public abstract class AbstractSimcalInputData extends F90NamelistImpl implements
         this.image_root=builder.image_root;
         this.props=builder.props;
         this.subdir_key_name=builder.subdir_key_name;
-        this.prefix_key_name=builder.prefix_key_name;
-        this.image_filename_end=builder.image_filename_end;
         
         this.sample = new F90NamelistImpl(GcalAuxGroupFactory.factory(), builder.sample_in);
         this.sample_in = builder.sample_in;
@@ -140,8 +138,6 @@ public abstract class AbstractSimcalInputData extends F90NamelistImpl implements
         private File image_root;
         private Properties props;
         private String subdir_key_name;
-        private String prefix_key_name;
-        private String image_filename_end;
         
         private File sample_in;
         
@@ -167,16 +163,6 @@ public abstract class AbstractSimcalInputData extends F90NamelistImpl implements
         
         public T subdir_key_name(String subdir_key_name) {
             this.subdir_key_name=subdir_key_name;
-            return self();
-        }
-        
-        public T prefix_key_name(String prefix_key_name) {
-            this.prefix_key_name=prefix_key_name;
-            return self();
-        }
-        
-        public T image_filename_end(String image_filename_end) {
-            this.image_filename_end=image_filename_end;
             return self();
         }
         
