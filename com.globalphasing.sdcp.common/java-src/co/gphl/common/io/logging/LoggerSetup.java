@@ -43,9 +43,19 @@ public class LoggerSetup {
     
 	public static Logger getLogger ( String name, Level level ) {
 		
-	    // Don't go below minimum log level specified by invoking application.
-	    if ( LoggerSetup.level != null && level != null && LoggerSetup.level.intValue() > level.intValue() )
-	        level = LoggerSetup.level;
+        /*
+         * We want to set the logging level to the minimum (i.e. most detailed)
+         * of the actual level argument and LoggerSetup.level, i.e. if the
+         * invoking code of this method has specified a level, an external
+         * parameter can make the logging more detailed, but not less
+         */	     
+	     
+	    if ( LoggerSetup.level != null && level != null )
+            /*
+             * If java.util.logging.Level was castable to int, we would do:
+             * level = Math.min(LoggerSetup.level, level)
+             */
+	        level = LoggerSetup.level.intValue() < level.intValue() ? LoggerSetup.level : level;
 	    
 		Logger retval = Logger.getLogger(name);
 		// We can reduce the level (to make more messages get through)
