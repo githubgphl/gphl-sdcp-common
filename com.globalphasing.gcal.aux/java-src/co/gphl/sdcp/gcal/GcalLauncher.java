@@ -50,7 +50,7 @@ public abstract class GcalLauncher implements Serializable {
     private String loggerName;
     private Level loggerLevel;
     
-    protected final String propNamePrefix, appName;
+    protected final String globalPropNamePrefix, propNamePrefix, appName;
     protected final Properties properties;
     protected String outfileName;
     private boolean uniqueFilenames;
@@ -131,6 +131,7 @@ public abstract class GcalLauncher implements Serializable {
         // Need to assign to final fields in every constructor to keep the compiler happy.
         // The JVM uses some reflective black magic in defaultReadObject to restore their
         // state
+        this.globalPropNamePrefix = "";
         this.propNamePrefix = "";
         this.appName = "";
         this.properties = new Properties();
@@ -178,7 +179,8 @@ public abstract class GcalLauncher implements Serializable {
         if ( appName == null || appName.length() == 0 )
             throw new IllegalArgumentException("Must specify a non-null, non-zero-length application name");
         this.appName = appName;
-        this.propNamePrefix = this.regulariseNamespace(propNameNamespace, appName);
+        this.globalPropNamePrefix = this.regulariseNamespace(propNameNamespace);
+        this.propNamePrefix = this.globalPropNamePrefix + appName + ".";
         this.properties = properties != null ? properties : System.getProperties();
 
         this.setupProperties();
@@ -326,9 +328,19 @@ public abstract class GcalLauncher implements Serializable {
                     paramSet.put(propArg, propVal);
             }
         }
+        
+        // Cater for global properties (i.e. not specific to a particular gcal application)
+        // Just BDG_home for now
+        propName = this.globalPropNamePrefix + GcalLauncher.BDG_LICENCE_DIR;
+        propArg = this.getPropNames().get(GcalLauncher.BDG_LICENCE_DIR);
+        if ( ! this.env.containsKey(propArg) &&
+                this.properties.containsKey(propName) ) {
+            this.env.put( propArg, this.properties.getProperty(propName) );
+        }
+        
     }
 
-    private String regulariseNamespace(String namespace, String appName) {
+    private String regulariseNamespace(String namespace) {
         
         String retval = namespace;
         
@@ -345,7 +357,7 @@ public abstract class GcalLauncher implements Serializable {
         if ( ! retval.endsWith(".") )
             retval += '.';
         
-        return retval + appName + '.';
+        return retval;
         
     }
     
