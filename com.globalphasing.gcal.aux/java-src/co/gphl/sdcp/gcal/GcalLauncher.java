@@ -331,11 +331,14 @@ public abstract class GcalLauncher implements Serializable {
         
         // Cater for global properties (i.e. not specific to a particular gcal application)
         // Just BDG_home for now
-        propName = this.globalPropNamePrefix + GcalLauncher.BDG_LICENCE_DIR;
         propArg = this.getPropNames().get(GcalLauncher.BDG_LICENCE_DIR);
-        if ( ! this.env.containsKey(propArg) &&
-                this.properties.containsKey(propName) ) {
-            this.env.put( propArg, this.properties.getProperty(propName) );
+        if ( ! this.env.containsKey(propArg) ) {
+            propName = this.globalPropNamePrefix + GcalLauncher.BDG_LICENCE_DIR;
+            // Don't check this.properties.hasProperty(propName) because
+            // that doesn't check in the default property list
+            propVal = this.properties.getProperty(propName);
+            if ( propVal != null && !propVal.isEmpty() )
+                this.env.put( propArg, propVal );
         }
         
     }
