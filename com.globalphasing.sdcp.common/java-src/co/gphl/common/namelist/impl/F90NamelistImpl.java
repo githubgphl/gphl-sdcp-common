@@ -200,12 +200,11 @@ public class F90NamelistImpl
 	    if ( this.size() > 0 )
 	        throw new RuntimeException("The read method should only be called on an empty instance");
 
-	    LineNumberReader reader = null;
 	    this.reading = false;
 	    
-		try {
-
-		    reader = new LineNumberReader ( new FileReader(this.nlFile) );
+		try ( LineNumberReader reader =
+		        new LineNumberReader ( new FileReader(this.nlFile) ) ) {
+		    
 		    this.reading = true;
 
 			String[] nameValue;
@@ -292,8 +291,6 @@ public class F90NamelistImpl
 			throw new F90NamelistException( errorMessage("Problem with input"), e );
 		}
 		finally {
-			if ( reader != null )
-				reader.close();
 			this.reading = false;
 			curLineNumber = 0;
 		}

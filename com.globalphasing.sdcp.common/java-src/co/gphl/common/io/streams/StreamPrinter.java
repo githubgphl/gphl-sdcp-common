@@ -79,47 +79,40 @@ public class StreamPrinter extends Thread {
     @Override
     public void run() {
 
-        try {
-            final Writer fileWriter =
-                    this.outputFile == null ? null : new FileWriter(outputFile, this.append);
+        try ( Writer fileWriter = this.outputFile == null ?
+                null : new FileWriter(outputFile, this.append) ) {
 
             if ( fileWriter != null )
                 fileWriter.write(this.header);
             if ( this.outputWriter != null )
                 this.outputWriter.write(this.header);
-            
-            try {
-                InputStreamReader isr = new InputStreamReader(is);
-                BufferedReader br = new BufferedReader(isr);
 
-                String line=null;
+            InputStreamReader isr = new InputStreamReader(is);
+            BufferedReader br = new BufferedReader(isr);
 
-                // For efficiency, don't test for destinations inside a
-                // "while ( (line = br.readLine()) != null)" loop
-                if ( this.outputWriter != null && fileWriter == null ) {
-                    while ( (line = br.readLine()) != null) {
-                        this.outputWriter.write(line + "\n");
-                        this.outputWriter.flush();
-                        this.lastLine = line;
-                    }
-                }
-                else if ( this.outputWriter != null && fileWriter != null ) {
-                    while ( (line = br.readLine()) != null) {
-                        this.outputWriter.write(line + "\n");
-                        this.outputWriter.flush();
-                        fileWriter.write(line + "\n");
-                        // Don't flush file writer.
-                        this.lastLine = line;
-                    }
-                }
-                else if ( this.outputWriter == null && fileWriter != null ) {
-                    fileWriter.write(line + "\n");
+            String line=null;
+
+            // For efficiency, don't test for destinations inside a
+            // "while ( (line = br.readLine()) != null)" loop
+            if ( this.outputWriter != null && fileWriter == null ) {
+                while ( (line = br.readLine()) != null) {
+                    this.outputWriter.write(line + "\n");
+                    this.outputWriter.flush();
                     this.lastLine = line;
                 }
             }
-            finally {
-                if ( fileWriter != null )
-                    fileWriter.close();
+            else if ( this.outputWriter != null && fileWriter != null ) {
+                while ( (line = br.readLine()) != null) {
+                    this.outputWriter.write(line + "\n");
+                    this.outputWriter.flush();
+                    fileWriter.write(line + "\n");
+                    // Don't flush file writer.
+                    this.lastLine = line;
+                }
+            }
+            else if ( this.outputWriter == null && fileWriter != null ) {
+                fileWriter.write(line + "\n");
+                this.lastLine = line;
             }
         }
         catch (IOException e) {
