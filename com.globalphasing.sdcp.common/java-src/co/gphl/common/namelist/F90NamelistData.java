@@ -12,8 +12,6 @@
 
 package co.gphl.common.namelist;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.Set;
 
 import co.gphl.common.namelist.impl.F90NamelistImpl;
@@ -23,7 +21,7 @@ import co.gphl.common.namelist.impl.F90NamelistImpl;
  *
  */
 public interface F90NamelistData
-	extends NamelistData, Iterable<F90NamelistGroup> {
+    extends NamelistData, Iterable<F90NamelistGroup> {
 
     public F90NamelistGroup newNamelistGroup ( String name, Integer lineNo, boolean addAtEnd );
     public F90NamelistGroup get(int index);
@@ -43,6 +41,6 @@ public interface F90NamelistData
     // Be very selective about adding methods to this interface from
     // Collection/List. Too many retained references to namelist groups
     // will eventually cause problems.
-    
+
 
 }

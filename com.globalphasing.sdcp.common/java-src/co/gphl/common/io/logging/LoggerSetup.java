@@ -29,7 +29,7 @@ import java.util.logging.SimpleFormatter;
 public class LoggerSetup {
 
     private static Level level = Level.INFO;
-    
+
     /**
      * Specify the minimum {@link Level} that can be set by {@link #getLogger(String, Level)}.
      * Setting it to {@code null} means that there is no restriction. The default is
@@ -40,57 +40,57 @@ public class LoggerSetup {
     public static void setLevel( Level level ) {
         LoggerSetup.level = level;
     }
-    
-	public static Logger getLogger ( String name, Level level ) {
-		
+
+    public static Logger getLogger ( String name, Level level ) {
+
         /*
          * We want to set the logging level to the minimum (i.e. most detailed)
          * of the actual level argument and LoggerSetup.level, i.e. if the
          * invoking code of this method has specified a level, an external
          * parameter can make the logging more detailed, but not less
-         */	     
-	     
-	    if ( LoggerSetup.level != null && level != null )
+         */
+
+        if ( LoggerSetup.level != null && level != null )
             /*
              * If java.util.logging.Level was castable to int, we would do:
              * level = Math.min(LoggerSetup.level, level)
              */
-	        level = LoggerSetup.level.intValue() < level.intValue() ? LoggerSetup.level : level;
-	    
-		Logger retval = Logger.getLogger(name);
-		// We can reduce the level (to make more messages get through)
-		// but not increase it.
-		if ( level != null &&
-		        ( retval.getLevel() == null || retval.getLevel().intValue() > level.intValue() ) )
-		    retval.setLevel(level);
-		
-    	if ( retval.getLevel() == null 
-    			|| ( level != null && retval.getLevel().intValue() > level.intValue() ) )
-    		retval.setLevel(level);
+            level = LoggerSetup.level.intValue() < level.intValue() ? LoggerSetup.level : level;
 
-    	Set<Handler> allHandlers = LoggerSetup.getAllHandlers(retval);
-    	
-    	if ( allHandlers.size()  == 0 ) {
-    	    Handler newHandler = new ConsoleHandler();
-    	    newHandler.setLevel(level);
-        	retval.addHandler( newHandler );
-        	allHandlers.add( newHandler );
-    	}
-    	
-    	for ( Handler handler: allHandlers ) {
-    		if ( handler.getLevel() == null 
-    				|| ( level != null && handler.getLevel().intValue() > level.intValue() ) )
-    			handler.setLevel(level);
-    		if ( handler.getFormatter() == null )
-    			handler.setFormatter( new SimpleFormatter() );
-    	}
+        Logger retval = Logger.getLogger(name);
+        // We can reduce the level (to make more messages get through)
+        // but not increase it.
+        if ( level != null &&
+                ( retval.getLevel() == null || retval.getLevel().intValue() > level.intValue() ) )
+            retval.setLevel(level);
 
-    	return retval;
-		
-	}
-	
-	private static Set<Handler> getAllHandlers( Logger logger ) {
-	    
+        if ( retval.getLevel() == null 
+                || ( level != null && retval.getLevel().intValue() > level.intValue() ) )
+            retval.setLevel(level);
+
+        Set<Handler> allHandlers = LoggerSetup.getAllHandlers(retval);
+
+        if ( allHandlers.size()  == 0 ) {
+            Handler newHandler = new ConsoleHandler();
+            newHandler.setLevel(level);
+            retval.addHandler( newHandler );
+            allHandlers.add( newHandler );
+        }
+
+        for ( Handler handler: allHandlers ) {
+            if ( handler.getLevel() == null 
+                    || ( level != null && handler.getLevel().intValue() > level.intValue() ) )
+                handler.setLevel(level);
+            if ( handler.getFormatter() == null )
+                handler.setFormatter( new SimpleFormatter() );
+        }
+
+        return retval;
+
+    }
+
+    private static Set<Handler> getAllHandlers( Logger logger ) {
+
         Set<Handler> retval = new HashSet<Handler>();
 
         do {
@@ -98,9 +98,9 @@ public class LoggerSetup {
                 retval.add(h);
 
         } while ( logger.getUseParentHandlers() && ( logger = logger.getParent() ) != null );
-	    
-	    return retval;
-	    
-	}
-	
+
+        return retval;
+
+    }
+
 }

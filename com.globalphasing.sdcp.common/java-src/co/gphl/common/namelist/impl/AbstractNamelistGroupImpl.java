@@ -29,15 +29,14 @@ import co.gphl.common.namelist.VarnameComparator;
  * @author pkeller
  *
  */
-public abstract class AbstractNamelistGroupImpl
-    extends TreeMap<String, String[]> 
-    implements NamelistGroup {
+public abstract class AbstractNamelistGroupImpl extends
+    TreeMap<String, String[]> implements NamelistGroup {
 
     /**
      * 
      */
     private static final long serialVersionUID = -1132029170103736118L;
-    
+
     // regex that matches the end of a value.
     // It may also match in the middle of a value: it is up to the particular
     // subclass to override the splitNextValue method to make sure that
@@ -51,12 +50,12 @@ public abstract class AbstractNamelistGroupImpl
 
     // Approximate maximum line length on output.
     protected int maxLineLen;
-    
+
     // Keep track of this explicitly, so we don't have to keep
     // fishing it back from the TreeMap and casting it.
     private VarnameComparator comparator = null;
     private Set<String> charVarnames = null;
-    
+
     /**
      * Constructor for namelist groups that use a {@link VarnameComparator} and
      * a {@link Set} to define the ordering of variable names and which
@@ -67,29 +66,29 @@ public abstract class AbstractNamelistGroupImpl
      * @param lineNo
      */
     protected AbstractNamelistGroupImpl ( VarnameComparator comparator, 
-                                          Set<String> charVarnames,
-                                          Integer lineNo) {
+            Set<String> charVarnames,
+            Integer lineNo) {
         super(comparator);
         this.comparator = comparator;
         this.charVarnames = charVarnames;
         this.lineNo = lineNo;
     }
-    
+
     protected AbstractNamelistGroupImpl ( NamelistGroup group ) {
         // N.B. if group implements SortedMap, the ordering is maintained
         // in the new instance
         super(group.map());
     }
-    
+
     public Integer getLineNo() {
         return this.lineNo;
     }
-    
+
     @Override
     public Boolean accepts(String keyName) {
         return this.comparator == null ? null : this.comparator.contains(keyName);
     } 
-    
+
     /**
      * If this method returns true, the namelist group allows
      * non-unique keys which are disambiguated by appending a
@@ -107,7 +106,7 @@ public abstract class AbstractNamelistGroupImpl
      * @return whether or not variable names must be unique for this namelist group
      */
     protected abstract boolean areVarNamesUnique();
-    
+
     protected List<String> splitValueList ( String value ) {
         String myValue = new String(value.trim());
         String[] tokens;
@@ -180,7 +179,7 @@ public abstract class AbstractNamelistGroupImpl
         // Should be optional, i.e. only check if some static member of this
         // class is set: allowing later assignments to a variable overwrite
         // earlier ones is normal F90 behaviour I think.
-        
+
         // We need to special-case an empty value list because it seems that
         // the Fortran90 standard disallows a name-value subsequence list
         // with no values like this:
@@ -193,8 +192,8 @@ public abstract class AbstractNamelistGroupImpl
         //
         List<String> values = ( valueList == null || valueList.length() == 0 ) ?
                 Arrays.asList( new String[] {null} ) :
-                splitValueList(valueList);
-        return this.put(varName, values.toArray( new String[values.size()] ) );
+                    splitValueList(valueList);
+                return this.put(varName, values.toArray( new String[values.size()] ) );
     }
 
     public String[] put( String varName, Enum<?>[] valueArray ) {
@@ -202,11 +201,11 @@ public abstract class AbstractNamelistGroupImpl
         for ( Enum<?> e: valueArray) {
             valueList.add(e.toString());
         }
-        
+
         String[] values = new String[valueList.size()];
         return this.put(varName, valueList.toArray(values));
     }
-    
+
     @Override
     public String[] put(String varName, Integer value) {
         return this.put(varName, value.toString());
@@ -221,17 +220,17 @@ public abstract class AbstractNamelistGroupImpl
     public String[] put(String varName, Double value) {
         return this.put(varName, value.toString());
     }
-    
+
     @Override
     public String[] put ( String varName, List<Double> values ) {
-    	
-    	String[] valueList = new String[values.size()];
-    	for ( int i = 0; i < valueList.length; i ++ )
-    		valueList[i] = values.get(i).toString();
-    	
-    	return this.put(varName, valueList);
+
+        String[] valueList = new String[values.size()];
+        for ( int i = 0; i < valueList.length; i ++ )
+            valueList[i] = values.get(i).toString();
+
+        return this.put(varName, valueList);
     }
-    
+
     @Override
     public List<Double> getDoubleList ( String varName ) {
         List<Double> retval = new ArrayList<Double>(3);
@@ -289,7 +288,7 @@ public abstract class AbstractNamelistGroupImpl
         return val == null ? null : Long.valueOf(val);        
     }
 
-    
+
     public void write(Writer writer, String valueSeparator) throws IOException {
 
         // We use an iterator to loop over namelist group variables,
@@ -303,7 +302,7 @@ public abstract class AbstractNamelistGroupImpl
             // Get next variable and type info if available
             entry = iter.next();
             String key = entry.getKey();
-            
+
             // Cater for var names having been disambiguated with a '=...' suffix
             if ( !this.areVarNamesUnique() ) {
                 key = ( key.split("=", 2) )[0];
@@ -314,10 +313,10 @@ public abstract class AbstractNamelistGroupImpl
             String sep = "=";
             // Iterate over values assigned to this variable
             for ( String v: entry.getValue() ) {
-                
+
                 // Always write out the separator before adding a new value
                 outLine += sep;
-                
+
                 if ( v == null || v.length() == 0 ) {
                     if ( ! nullOK )
                         throw new RuntimeException("Key '" + key + "' has one or more null values, but we are not using commas as separators");
@@ -329,7 +328,7 @@ public abstract class AbstractNamelistGroupImpl
 
                 else {
                     // Non-null value.
-                    
+
                     // First check line length.
                     // Need to do this to work around gfortran bug that doesn't parse
                     // the sequence "[^,]\n," correctly.
@@ -337,7 +336,7 @@ public abstract class AbstractNamelistGroupImpl
                         writer.append( outLine + "\n");
                         outLine = "  ";
                     }
-                    
+
                     // Specific transformations of values on output:
                     // CHAR => single-quoted, with embedded single quotes doubled.
                     if ( charVarnames != null && charVarnames.contains(key) ) 
@@ -346,38 +345,38 @@ public abstract class AbstractNamelistGroupImpl
                         outLine += v;
                     }
                 }
-                
+
                 sep = valueSeparator;
             }
-            
+
             if ( outLine.length() > 2 )
                 writer.append(outLine + "\n");
-            
+
         }
 
 
     }
-    
+
     @Override
     public boolean containsKey(String varName) {
-    	return super.containsKey(varName);
+        return super.containsKey(varName);
     }
-    
+
     @Override
     public int size(String varName) {
         if ( ! this.containsKey(varName) )
             return 0;
         return this.get(varName).length;
     }
-    
+
     @Override
     public String[] get(String varName) {
-    	return super.get(varName);
+        return super.get(varName);
     }
-    
+
     @Override
     public VarnameComparator comparator() {
         return this.comparator;
     }
-    
+
 }

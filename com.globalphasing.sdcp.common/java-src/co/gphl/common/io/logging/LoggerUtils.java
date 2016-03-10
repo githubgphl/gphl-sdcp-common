@@ -22,10 +22,10 @@ import java.util.logging.Logger;
  */
 public class LoggerUtils {
 
-	public static void flush ( Logger logger ) {
-		
-		for ( Handler h: logger.getHandlers() )
-			h.flush();
-	}
-	
+    public static void flush ( Logger logger ) {
+
+        for ( Handler h: logger.getHandlers() )
+            h.flush();
+    }
+
 }

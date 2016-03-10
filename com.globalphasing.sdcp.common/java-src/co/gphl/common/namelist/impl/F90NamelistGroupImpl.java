@@ -22,9 +22,8 @@ import co.gphl.common.namelist.F90NamelistValueException;
 import co.gphl.common.namelist.NamelistGroup;
 import co.gphl.common.namelist.VarnameComparator;
 
-public abstract class F90NamelistGroupImpl 
-extends AbstractNamelistGroupImpl 
-implements F90NamelistGroup {
+public abstract class F90NamelistGroupImpl extends AbstractNamelistGroupImpl
+        implements F90NamelistGroup {
 
     /**
      * 
@@ -37,32 +36,32 @@ implements F90NamelistGroup {
         this.maxLineLen = 70;
     }
 
-    
+
     @Override
     public String[] put( String varName, String valueList ) {
         // Fortran90 identifiers start with a letter, then a sequence of letters,
         // digits and underscores
         if ( ! varName.matches("[A-Za-z]\\w*") )
             throw new F90NamelistValueException( varName + ": Not a legal Fortran identifier" );
-        
+
         return super.put(varName, valueList);
-        
+
     }
-    
+
     @Override
     public String[] put( String varName, String[] values ) {
         // Fortran90 identifiers start with a letter, then a sequence of letters,
         // digits and underscores
         if ( ! varName.matches("[A-Za-z]\\w*") )
             throw new F90NamelistValueException( varName + ": Not a legal Fortran identifier" );
-        
+
         return super.put(varName, values);
-        
+
     }
-    
+
     @Override
     protected List<String> splitValueList ( String value ) {
-        
+
         List<String> retval = super.splitValueList(value);
         // Remove all trailing nulls (to fit in with Fortran90 namelist semantics)
         // but leave first value in list even if it is a null, because a value sequence
@@ -73,7 +72,7 @@ implements F90NamelistGroup {
         return retval;
 
     }
-    
+
     // Yucky method to split off the first element of a value sequence
     @Override
     protected String[] splitNextValue ( String value ) {
@@ -126,42 +125,42 @@ implements F90NamelistGroup {
         return true;
     }
 
-	/* (non-Javadoc)
-	 * @see co.gphl.common.namelist.NamelistGroup#putAll(co.gphl.common.namelist.NamelistGroup)
-	 */
-	@Override
-	public void putAll(NamelistGroup group) {
-		this.putAll(group.map());
-		
-	}
+    /* (non-Javadoc)
+     * @see co.gphl.common.namelist.NamelistGroup#putAll(co.gphl.common.namelist.NamelistGroup)
+     */
+    @Override
+    public void putAll(NamelistGroup group) {
+        this.putAll(group.map());
 
-	/* (non-Javadoc)
-	 * @see co.gphl.common.namelist.NamelistGroup#map()
-	 */
-	@Override
-	public Map<String, String[]> map() {
-		return Collections.unmodifiableMap(this);
-	}
+    }
 
-	@Override
+    /* (non-Javadoc)
+     * @see co.gphl.common.namelist.NamelistGroup#map()
+     */
+    @Override
+    public Map<String, String[]> map() {
+        return Collections.unmodifiableMap(this);
+    }
+
+    @Override
     public F90NamelistData getOwningData() {
         return owningData;
     }
 
-	@Override
+    @Override
     public void setOwningData(F90NamelistData owningData) {
         this.owningData = owningData;
     }
 
-	public int getMaxLineLen() {
-	    return this.maxLineLen;
-	}
-	
-	public void setMaxLineLen(int maxLineLen) {
-	    if ( maxLineLen < 2 )
-	        throw new IllegalArgumentException("Called with maxLineLen " + maxLineLen + ". Must be >=2");
-	    this.maxLineLen = maxLineLen;
-	}
-	
+    public int getMaxLineLen() {
+        return this.maxLineLen;
+    }
+
+    public void setMaxLineLen(int maxLineLen) {
+        if ( maxLineLen < 2 )
+            throw new IllegalArgumentException("Called with maxLineLen " + maxLineLen + ". Must be >=2");
+        this.maxLineLen = maxLineLen;
+    }
+
 }
 

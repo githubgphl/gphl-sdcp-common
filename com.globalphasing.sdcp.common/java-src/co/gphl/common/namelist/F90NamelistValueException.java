@@ -14,28 +14,28 @@ package co.gphl.common.namelist;
 
 public class F90NamelistValueException extends RuntimeException {
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -74233040356942267L;
+    /**
+     * 
+     */
+    private static final long serialVersionUID = -74233040356942267L;
 
-	public F90NamelistValueException() {
-		// TODO Auto-generated constructor stub
-	}
+    public F90NamelistValueException() {
+        // TODO Auto-generated constructor stub
+    }
 
-	public F90NamelistValueException(String message) {
-		super(message);
-		// TODO Auto-generated constructor stub
-	}
+    public F90NamelistValueException(String message) {
+        super(message);
+        // TODO Auto-generated constructor stub
+    }
 
-	public F90NamelistValueException(Throwable cause) {
-		super(cause);
-		// TODO Auto-generated constructor stub
-	}
+    public F90NamelistValueException(Throwable cause) {
+        super(cause);
+        // TODO Auto-generated constructor stub
+    }
 
-	public F90NamelistValueException(String message, Throwable cause) {
-		super(message, cause);
-		// TODO Auto-generated constructor stub
-	}
+    public F90NamelistValueException(String message, Throwable cause) {
+        super(message, cause);
+        // TODO Auto-generated constructor stub
+    }
 
 }

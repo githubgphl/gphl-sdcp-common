@@ -23,15 +23,15 @@ public interface NamelistGroup {
     public String[] put(String varName, String valueList);
     public String[] put(String varName, String[] values);
     public String[] put(String varName, List<Double> values);
-    
+
     public String[] put(String varName, Integer value);
     public String[] put(String varName, Long value);
     public String[] put(String varName, Double value);
-    
+
     public void putAll(NamelistGroup group);
     public Map<String, String[]> map();
     public Set<String> keySet();
-    
+
     /**
      * Returns {@code true} if the specified key is a valid variable name
      * for the namelist group. Otherwise returns {@code null} if no variable
@@ -55,7 +55,7 @@ public interface NamelistGroup {
      * @return the number of values assigned to {@code varName}
      */
     public int size(String varName);
-    
+
     /**
      * Returns value of varName as a List of Double's
      * 
@@ -63,15 +63,15 @@ public interface NamelistGroup {
      * @return returns value sequence
      */
     public List<Double> getDoubleList(String varName);
-    
+
     /**
      * Returns value of varName as a List of Float's
      * 
      * @param varName Name of variable of namelist group
      * @return returns value sequence
      */
-	public List<Float>  getFloatList(String varName);
-	
+    public List<Float>  getFloatList(String varName);
+
     /**
      * <p>Gets value if variable has one value only. Throws
      * {@code RuntimeException} if variable has more than one value;
@@ -93,7 +93,7 @@ public interface NamelistGroup {
     public String[]     get(String varName);
     public void         clear();
     public int          size();
-    
+
     /**
      * Emits contents of namelist group to {@code writer}.
      * 
@@ -102,6 +102,6 @@ public interface NamelistGroup {
      * @throws IOException
      * @see NamelistData#setCommaSeparator(boolean)
      */
-public void write(Writer writer, String valueSeparator) throws IOException;
-    
+    public void write(Writer writer, String valueSeparator) throws IOException;
+
 }

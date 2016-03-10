@@ -17,9 +17,9 @@ import java.util.logging.SimpleFormatter;
 
 public class MinimalFormatter extends SimpleFormatter {
 
-	@Override
-	public String format( LogRecord record ) {
-		return record.getLevel() + ": " + record.getMessage() + "\n";
-	}
-	
+    @Override
+    public String format( LogRecord record ) {
+        return record.getLevel() + ": " + record.getMessage() + "\n";
+    }
+
 }

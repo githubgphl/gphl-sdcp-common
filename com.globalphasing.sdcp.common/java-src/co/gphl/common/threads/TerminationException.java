@@ -22,22 +22,22 @@ package co.gphl.common.threads;
  */
 public class TerminationException extends Exception {
 
-	public TerminationException() {
-		super();
-	}
+    public TerminationException() {
+        super();
+    }
 
-	public TerminationException(String message, Throwable cause) {
-		super(message, cause);
-	}
+    public TerminationException(String message, Throwable cause) {
+        super(message, cause);
+    }
 
-	public TerminationException(String message) {
-		super(message);
-	}
+    public TerminationException(String message) {
+        super(message);
+    }
 
-	public TerminationException(Throwable cause) {
-		super(cause);
-	}
+    public TerminationException(Throwable cause) {
+        super(cause);
+    }
 
-	private static final long serialVersionUID = 5259835988686750755L;
+    private static final long serialVersionUID = 5259835988686750755L;
 
 }
