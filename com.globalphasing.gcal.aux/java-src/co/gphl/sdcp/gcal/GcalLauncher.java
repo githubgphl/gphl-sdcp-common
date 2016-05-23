@@ -260,7 +260,7 @@ public abstract class GcalLauncher implements Serializable {
         launcher.startAndWait(
                 this.stdoutWriter == null ? new PrintWriter(System.out): this.stdoutWriter,
                 this.stderrWriter == null ? null : this.stderrWriter,
-                stdout, stderr, false);
+                stdout, stderr, false, true);
         this.myLogger.info(this.bin + " finished in " +
                 (System.currentTimeMillis() - startTime)/1000.0 + "s");
         

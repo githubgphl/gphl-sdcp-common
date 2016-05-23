@@ -15,7 +15,6 @@ package co.gphl.common.threads;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.Writer;
 
@@ -70,19 +69,22 @@ public class ProcessLauncher {
      * @throws InterruptedException
      * @see ProcessBuilder#redirectErrorStream(boolean)
      */
-    public void startAndWait(Writer stdout, Writer stderr, File stdoutFile, File stderrFile, boolean append)
+    public void startAndWait(Writer stdout, Writer stderr, File stdoutFile, File stderrFile,
+            boolean append, boolean captureLastLine)
             throws TerminationException, IOException, InterruptedException {
 
         this.processBuilder.redirectErrorStream( stderr == null && stderrFile == null );
         String cmd = this.commandLine(80, "\\\n");
         Process process = this.processBuilder.start();
 
-        StreamPrinter outPrinter = new StreamPrinter(process.getInputStream(), stdout, stdoutFile, append, cmd);
+        StreamPrinter outPrinter = new StreamPrinter(process.getInputStream(), stdout, stdoutFile,
+                append, cmd, 0, 0, captureLastLine);
         outPrinter.start();
 
         StreamPrinter errPrinter = null;
         if ( ! this.processBuilder.redirectErrorStream() ) {
-            errPrinter = new StreamPrinter(process.getErrorStream(), stderr, stderrFile, append, null);
+            errPrinter = new StreamPrinter(process.getErrorStream(), stderr, stderrFile,
+                    append, null, 0, 0, captureLastLine);
             errPrinter.start();
         }
 
@@ -93,8 +95,8 @@ public class ProcessLauncher {
         if ( errPrinter != null )
             errPrinter.join();
 
-        this.lastOutLine = outPrinter.getLastLine();
-        this.lastErrLine = errPrinter == null ? this.lastOutLine : errPrinter.getLastLine();
+        this.lastOutLine = captureLastLine ? outPrinter.getLastLine() : null;
+        this.lastErrLine = errPrinter == null || captureLastLine ? this.lastOutLine : errPrinter.getLastLine();
 
         if (status != 0)
             throw new TerminationException("Command exited with status " + status
@@ -103,17 +105,20 @@ public class ProcessLauncher {
     }
 
     /**
-     * Invokes {@link #startAndWait(PrintStream, PrintStream)} with
-     * {@link System#out} and {@link System#err} as first and second parameters.
+     * Invokes {@link #startAndWait(Writer, Writer, File, File, boolean, boolean)} as
+     * {@code this.startAndWait(new PrintWriter(System.out), new PrintWriter(System.err), null, null, false, captureLastLine )}
+     * 
+     * @param captureLastLine if {@code true}, an attempt will be made to capture the last lines
+     * of stdout and stderr
      * 
      * @throws TerminationException
      * @throws IOException
      * @throws InterruptedException
      */
-    public void startAndWait() throws TerminationException,
+    public void startAndWait(boolean captureLastLine) throws TerminationException,
     IOException, InterruptedException {
 
-        this.startAndWait(new PrintWriter(System.out), new PrintWriter(System.err), null, null, false );
+        this.startAndWait(new PrintWriter(System.out), new PrintWriter(System.err), null, null, false, captureLastLine );
 
     }
 
