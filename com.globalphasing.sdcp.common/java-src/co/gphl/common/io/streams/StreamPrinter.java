@@ -222,6 +222,9 @@ public class StreamPrinter extends Thread {
             
         }
         catch (IOException e) {
+            if (this.header != null) {
+                System.err.println(this.header);
+            }
             // Don't abort workflow over this: it may still run OK even if
             // the user-facing output isn't being written properly to the file
             e.printStackTrace();
