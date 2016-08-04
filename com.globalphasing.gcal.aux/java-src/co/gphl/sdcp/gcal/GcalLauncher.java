@@ -26,11 +26,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
-import co.gphl.common.io.logging.LoggerSetup;
-import co.gphl.common.io.logging.LoggerUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import co.gphl.common.threads.ProcessLauncher;
 import co.gphl.common.threads.TerminationException;
 
@@ -48,7 +47,6 @@ public abstract class GcalLauncher implements Serializable {
     // See readObject method below.
     private transient Logger myLogger;
     private String loggerName;
-    private Level loggerLevel;
     
     protected final String globalPropNamePrefix, propNamePrefix, appName;
     protected final Properties properties;
@@ -141,7 +139,7 @@ public abstract class GcalLauncher implements Serializable {
             throws ClassNotFoundException, IOException {
         
         in.defaultReadObject();
-        this.myLogger = LoggerSetup.getLogger(this.loggerName, this.loggerLevel);
+        this.myLogger = LoggerFactory.getLogger(this.loggerName);
 
     }
     
@@ -170,11 +168,10 @@ public abstract class GcalLauncher implements Serializable {
             Writer stdoutWriter, Writer stderrWriter,
             boolean outputToFile, boolean redirectErrorStream ) {
         this.myLogger = logger != null ? logger :
-            LoggerSetup.getLogger(GcalLauncher.class.getSimpleName(), Level.WARNING);
+            LoggerFactory.getLogger(GcalLauncher.class);
         
         // Save, so that we can set myLogger up again on deserialisation
         this.loggerName = this.myLogger.getName();
-        this.loggerLevel = this.myLogger.getLevel();
         
         if ( appName == null || appName.length() == 0 )
             throw new IllegalArgumentException("Must specify a non-null, non-zero-length application name");
@@ -186,7 +183,7 @@ public abstract class GcalLauncher implements Serializable {
         this.setupProperties();
         
         if ( ! this.check_bin_ok() )
-            this.myLogger.warning("Specified executable " +
+            this.myLogger.warn("Specified executable " +
                     ( this.bin == null ? "<null>" : this.bin.toString() ) + " is not executable");
 
         this.stdoutWriter = stdoutWriter;
@@ -207,7 +204,7 @@ public abstract class GcalLauncher implements Serializable {
         
         if ( ! this.check_bin_ok() ) {
             String binName = this.bin == null ? "<null>" : this.bin.toString();
-            this.myLogger.severe("Cannot launch binary " + binName);
+            this.myLogger.error("Cannot launch binary " + binName);
             throw new IllegalStateException("Cannot launch binary " + binName);
         }
 
@@ -247,7 +244,6 @@ public abstract class GcalLauncher implements Serializable {
         
         long startTime = System.currentTimeMillis();
         this.myLogger.info("Starting " + cmd);
-        LoggerUtils.flush(myLogger);
         
         File stdout = null, stderr = null;
         if ( this.outputToFile ) {
@@ -348,12 +344,12 @@ public abstract class GcalLauncher implements Serializable {
         String retval = namespace;
         
         if ( retval == null || retval.length() == 0 ) {
-            this.myLogger.warning("Null/zero-length namespace prefix specified for property names. This is a bad idea");
+            this.myLogger.warn("Null/zero-length namespace prefix specified for property names. This is a bad idea");
             return appName;
         }
         
         if ( retval.charAt(0) == '.' ) {
-            this.myLogger.warning("Namespace '" + retval + "' starts with '.'. Removing");
+            this.myLogger.warn("Namespace '" + retval + "' starts with '.'. Removing");
             retval = retval.substring(1);
         }
         

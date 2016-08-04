@@ -19,7 +19,6 @@ import java.io.PrintWriter;
 import java.io.Writer;
 
 import co.gphl.common.io.streams.StreamPrinter;
-import co.gphl.common.io.logging.LoggerUtils;
 
 /**
  * @author pkeller
@@ -54,11 +53,6 @@ public class ProcessLauncher {
      * and {@code stderr}/{@code stderrFile}, and waits until the process has finished.
      * {@code if (stderr == null && stderrFile == null)}, standard 
      * error of the process will be merged with standard output.
-     * 
-     * <p>If any loggers are writing to the streams specified by {@code stdout}
-     * or {@code stderr}, it may be helpful to flush the logger's handlers,
-     * by {@link LoggerUtils#flush(java.util.logging.Logger)} or otherwise before
-     * calling this method.</p>
      * 
      * @param stdout
      * @param stderr

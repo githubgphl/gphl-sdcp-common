@@ -20,10 +20,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
-import co.gphl.common.io.logging.LoggerSetup;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author pkeller
@@ -32,7 +31,7 @@ import co.gphl.common.io.logging.LoggerSetup;
 public class SimcalLauncher extends GcalLauncher implements Serializable {
 
     static private Logger logger =
-            LoggerSetup.getLogger(SimcalLauncher.class.getSimpleName(), Level.INFO);
+            LoggerFactory.getLogger(SimcalLauncher.class);
     
     /**
      * Property used to enable and set {@code --memory-pool} command-line option
