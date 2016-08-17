@@ -225,7 +225,7 @@ public abstract class GcalLauncher implements Serializable {
         this.outfileName = infile.toString().replaceFirst("\\.in$", "") + ".out";
         
         List<String> cmd = new ArrayList<String>(
-                Arrays.asList( this.bin.toString(), "-i", infile.toString(), "-o", outfileName) );
+                Arrays.asList( this.bin.toString(), "--input", infile.toString(), "--output", outfileName) );
 
         String val;
         for ( Entry<String, String> e: this.args.entrySet() ) {
