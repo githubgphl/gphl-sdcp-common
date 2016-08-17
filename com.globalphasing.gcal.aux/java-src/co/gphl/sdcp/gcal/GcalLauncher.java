@@ -390,5 +390,9 @@ public abstract class GcalLauncher implements Serializable {
         else
             return new File(wdir, this.appName + ".in");
     }
-    
+
+    public File getOutputFile() {
+        return new File(this.outfileName);
+    }
+
 }
