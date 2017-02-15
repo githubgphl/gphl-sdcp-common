@@ -19,6 +19,7 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import co.gphl.common.namelist.F90NamelistData;
@@ -120,10 +121,8 @@ public class F90NamelistImpl extends ArrayList<F90NamelistGroup> implements
      * instances when namelist groups are identified by strings containing their F90 names.
      * @throws IllegalArgumentException if {@code factory == null}
      */
-    public F90NamelistImpl( F90NamelistGroupFactory factory ) {
-        if ( factory == null )
-            throw new IllegalArgumentException("Must specify a namelist group factory");
-        this.nlgFactory = factory;
+    private F90NamelistImpl( F90NamelistGroupFactory factory ) {
+        this.nlgFactory = Objects.requireNonNull(factory, "Must specify a namelist group factory");
     }
 
     /**
@@ -136,7 +135,7 @@ public class F90NamelistImpl extends ArrayList<F90NamelistGroup> implements
      * @param appName application name. Not currently used.
      * @throws IllegalArgumentException if {@code factory == null}
      */
-    public F90NamelistImpl( F90NamelistGroupFactory factory, String appName ) {
+    private F90NamelistImpl( F90NamelistGroupFactory factory, String appName ) {
         this(factory);
         this.appName = ( appName == null ? "" : appName.toLowerCase() );
     }
@@ -158,9 +157,7 @@ public class F90NamelistImpl extends ArrayList<F90NamelistGroup> implements
     {
         this(factory, appName);
 
-        if ( nlFile == null )
-            throw new IllegalArgumentException("nlFile argument must not be null");
-        if ( nlFile.length() == 0L )
+        if ( Objects.requireNonNull(nlFile, "nlFile argument must not be null").length() == 0L )
             throw new IllegalArgumentException("File " + nlFile.toString() + " is zero length or does not exist");
 
         this.nlFile = nlFile;
