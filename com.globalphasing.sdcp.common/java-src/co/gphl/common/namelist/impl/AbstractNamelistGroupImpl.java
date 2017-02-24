@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -107,50 +108,57 @@ public abstract class AbstractNamelistGroupImpl extends
      */
     protected abstract boolean areVarNamesUnique();
 
-    protected List<String> splitValueList ( String value ) {
-        String myValue = new String(value.trim());
+    protected List<String> splitValueList ( String valueList ) {
+        
+        if ( valueList == null )
+            return Collections.emptyList();
+        
+        String myValueList = new String(valueList.trim());
+        if ( myValueList.length() == 0 )
+            return Collections.emptyList();
+        
         String[] tokens;
-        ArrayList<String> valueList = new ArrayList<String>();
+        ArrayList<String> values = new ArrayList<String>();
         int rc;
 
-        while ( myValue != null && myValue.length() > 0 ) {
+        while ( myValueList != null && myValueList.length() > 0 ) {
 
             // First check for a repeat count
-            if ( myValue.matches("\\d+\\*.*") ) {
-                tokens = myValue.split("\\*", 2);
+            if ( myValueList.matches("\\d+\\*.*") ) {
+                tokens = myValueList.split("\\*", 2);
                 // No need to re-trim here: spaces either side of the '*' mean something
                 // other than 'r*v'. 'r* v' means r nulls followed by v; others are
                 // syntactically wrong.
-                myValue = tokens[1];
+                myValueList = tokens[1];
                 rc = Integer.parseInt(tokens[0]);           
             }
             else
                 rc = 1;
 
             // Get next token
-            tokens = splitNextValue(myValue);
+            tokens = splitNextValue(myValueList);
 
             // Retain rest of line for next iteration, discarding comments
             if ( tokens[1].length() > 0 && tokens[1].charAt(0) != '!' ) {
-                myValue = tokens[1];
+                myValueList = tokens[1];
             }
             else {
-                myValue = null;
+                myValueList = null;
             }
 
             for ( int i = 0; i < rc; i++ ) {
                 // In Fortan-land, there is no distinction between a string that consists
                 // of zero or more spaces and a null. Map to null in all these cases
                 // (value has already been trim()-med )
-                valueList.add( tokens[0] == null || tokens[0].length() == 0 ? null : tokens[0] );
+                values.add( tokens[0] == null || tokens[0].length() == 0 ? null : tokens[0] );
             }
 
         }
 
-        if ( valueList.size() == 0 )
+        if ( values.size() == 0 )
             throw new F90NamelistValueException("A name-value subsequence must have at least one value");
 
-        return valueList;
+        return values;
 
     }
 
@@ -190,9 +198,7 @@ public abstract class AbstractNamelistGroupImpl extends
         //
         //   VAR=,
         //
-        List<String> values = ( valueList == null || valueList.length() == 0 ) ?
-                Arrays.asList( new String[] {null} ) :
-                    splitValueList(valueList);
+        List<String> values = this.splitValueList(valueList);
                 return this.put(varName, values.toArray( new String[values.size()] ) );
     }
 
