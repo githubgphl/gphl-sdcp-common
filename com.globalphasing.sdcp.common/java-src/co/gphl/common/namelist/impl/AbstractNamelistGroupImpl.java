@@ -377,7 +377,10 @@ public abstract class AbstractNamelistGroupImpl extends
 
     @Override
     public String[] get(String varName) {
-        return super.get(varName);
+        String[] retval = super.get(varName);
+        if ( retval != null )
+            retval = Arrays.copyOf(retval, retval.length);
+        return retval;
     }
 
     @Override
