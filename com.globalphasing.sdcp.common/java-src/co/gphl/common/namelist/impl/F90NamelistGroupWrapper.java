@@ -91,7 +91,7 @@ public abstract class F90NamelistGroupWrapper implements F90NamelistGroup, Seria
 
     @Override
     public void putAll(NamelistGroup group) {
-        group.putAll(group);
+        this.baseGroup.putAll(group);
     }
 
     @Override
