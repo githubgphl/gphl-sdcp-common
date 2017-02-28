@@ -13,6 +13,8 @@ package co.gphl.common.namelist.impl;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -213,23 +215,16 @@ public abstract class AbstractNamelistGroupImpl extends
     }
 
     @Override
-    public String[] put(String varName, Integer value) {
+    public String[] put(String varName, Number value) {
         return this.put(varName, value.toString());
     }
 
     @Override
-    public String[] put(String varName, Long value) {
-        return this.put(varName, value.toString());
-    }
+    public String[] put ( String varName, List<?> values ) {
 
-    @Override
-    public String[] put(String varName, Double value) {
-        return this.put(varName, value.toString());
-    }
-
-    @Override
-    public String[] put ( String varName, List<Double> values ) {
-
+        if ( values == null )
+            return null;
+        
         String[] valueList = new String[values.size()];
         for ( int i = 0; i < valueList.length; i ++ )
             valueList[i] = values.get(i).toString();
@@ -237,6 +232,81 @@ public abstract class AbstractNamelistGroupImpl extends
         return this.put(varName, valueList);
     }
 
+    @Override
+    public String[] putStringValue(String varName, String value) {
+        return this.put(varName, new String[]{value} );
+    }
+    
+    @Override
+    public String[] append(String varName, String valueList) {
+    
+        String[] vals = this.get(varName);
+        if ( vals == null || vals.length == 0 )
+            return this.put(varName, valueList);
+        
+        List<String> newValues = this.splitValueList(valueList);
+        if ( newValues.size() == 0 )
+            return Arrays.copyOf(vals, vals.length);
+        
+        String[] newVals = Arrays.copyOf(vals, vals.length + newValues.size());
+        for ( int i=vals.length; newValues.size() > 0; i++ )
+            newVals[i] = newValues.remove(0);
+        
+        return this.put(varName, newVals);
+    }
+    
+    @Override
+    public String[] append(String varName, Number value) {
+        return this.append(varName, value.toString());
+    }
+
+    @Override
+    public String[] append(String varName, List<?> values) {
+
+        String[] vals = this.get(varName);
+        if ( vals == null || vals.length == 0 )
+            return this.put(varName, values);
+            
+        if ( values == null || values.size() == 0 )
+            return vals;
+        
+        String[] newVals = Arrays.copyOf(vals, vals.length + values.size());
+        for ( int i = 0; i < values.size(); i++ )
+            newVals[vals.length+i] = values.get(i).toString();
+        return this.put(varName, newVals);
+        
+    }
+    
+    @Override
+    public String[] appendStringValue(String varName, String value) {
+        return this.append(varName, Arrays.asList( new String[]{value}) );
+    }
+    
+    @Override
+    public <T extends Number> List<T> getNumList(Class<T> type, String varName) {
+       
+        // This method will fail for the following subtypes of Number:
+        // AtomicInteger, AtomicLong, BigDecimal, BigInteger
+        // but we don't really care about that.
+        try {
+            // Roll on Java 8, which would let me use things like Double::valueOf
+            // rather than using reflection......
+            Method valueOf = type.getDeclaredMethod("valueOf", String.class);
+            String[] vals = this.get(varName);
+            List<T> retval = new ArrayList<T>(vals.length);
+            for ( String value: vals ) {
+                    retval.add( value == null ? null : type.cast(valueOf.invoke(null, value)) );
+            }
+            return retval;
+        } catch (NoSuchMethodException | SecurityException e) {
+            throw new IllegalArgumentException(e);
+        } catch (IllegalAccessException | IllegalArgumentException
+                | InvocationTargetException e) {
+            throw new RuntimeException("BUG: Needs fixing!");
+        }
+        
+    }
+    
     @Override
     public List<Double> getDoubleList ( String varName ) {
         List<Double> retval = new ArrayList<Double>(3);
@@ -274,6 +344,30 @@ public abstract class AbstractNamelistGroupImpl extends
         return retval;
     }
 
+    @Override
+    public <T extends Number> T getNumValue(Class<T> type, String varName) {
+        
+        String val = this.getStringValue(varName);
+        if ( val == null )
+            return null;
+        if ( type == Double.class )
+            return (T) Double.valueOf(val);
+        if ( type == Float.class )
+            return (T) Float.valueOf(val);
+        if ( type == Integer.class )
+            return (T) Integer.valueOf(val);
+        if ( type == Long.class )
+            return (T) Long.valueOf(val);
+        if ( type == Short.class )
+            return (T) Short.valueOf(val);
+        if ( type == Byte.class )
+            return (T) Byte.valueOf(val);
+        
+        throw new IllegalArgumentException("This method cannot return values of type " + type.getName() );
+        
+    }
+    
+    
     public Double getDoubleValue ( String varName ) {
         String val = this.getStringValue(varName);
         return val == null ? null : Double.valueOf(val);        

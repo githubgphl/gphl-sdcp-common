@@ -20,14 +20,38 @@ import java.util.Set;
 public interface NamelistGroup {
 
     public Integer getLineNo();
+    
+    /**
+     * Sets the value of {@varName} to an array of Strings.
+     * {@code valueList} is parsed into a {@code String[]} according to
+     * the rules of namelist values
+     * @param varName
+     * @param valueList
+     * @return the previous value of {@code varName}, or {@code null}
+     * if it was not previously present in the namelist group.
+     */
     public String[] put(String varName, String valueList);
     public String[] put(String varName, String[] values);
-    public String[] put(String varName, List<Double> values);
+    public String[] put(String varName, List<?> values);
 
-    public String[] put(String varName, Integer value);
-    public String[] put(String varName, Long value);
-    public String[] put(String varName, Double value);
+    public String[] put(String varName, Number value);
+    
+    /**
+     * Sets the value of {@varName} to a string value without
+     * parsing the value further
+     * 
+     * @param varName
+     * @param value
+     * @return the previous value of {@code varName}, or {@code null}
+     * if it was not previously present in the namelist group.
+     */
+    public String[] putStringValue(String varName, String value);
 
+    public String[] append(String varName, Number value);
+    public String[] append(String varName, List<?> values);
+    public String[] append(String varName, String valueList);
+    public String[] appendStringValue(String varName, String value);
+    
     public void putAll(NamelistGroup group);
     public Map<String, String[]> map();
     public Set<String> keySet();
@@ -61,7 +85,9 @@ public interface NamelistGroup {
      * 
      * @param varName Name of variable of namelist group
      * @return returns value sequence
+     * @deprecated Use {@link #getNumList(Class, String)} instead.
      */
+    @Deprecated
     public List<Double> getDoubleList(String varName);
 
     /**
@@ -69,9 +95,23 @@ public interface NamelistGroup {
      * 
      * @param varName Name of variable of namelist group
      * @return returns value sequence
+     * @deprecated Use {@link #getNumList(Class, String)} instead.
      */
+    @Deprecated
     public List<Float>  getFloatList(String varName);
 
+    /**
+     * Gets value as a list of numeric types. Byte, Double, Float, Integer,
+     * Long and Short are handled.
+     * @param type
+     * @param varName
+     * @return value as a List
+     * @see #getNumValue(Class, String)
+     * @throws NumberFormatException if any member of the value cannot be
+     * parsed as a number of {@code type}
+     */
+    public <T extends Number> List<T> getNumList(Class<T> type, String varName);
+    
     /**
      * <p>Gets value if variable has one value only. Throws
      * {@code RuntimeException} if variable has more than one value;
@@ -85,10 +125,59 @@ public interface NamelistGroup {
      * @return value (or {@code null} if variable has no values assigned)
      */
     public String       getStringValue(String varName) throws RuntimeException;
+    
+    /**
+     * Gets value as a Double
+     * @param varName
+     * @return value
+     * @deprecated Use {@link #getNumValue(Class, String)} instead: it handles
+     * internally with all boxed primitive numeric types.
+     */
+    @Deprecated
     public Double       getDoubleValue(String varName);
+
+    /**
+     * Gets value as a Float
+     * @param varName
+     * @return value
+     * @deprecated Use {@link #getNumValue(Class, String)} instead: it handles
+     * internally with all boxed primitive numeric types.
+     */
+    @Deprecated
     public Float        getFloatValue(String varName);
+
+    /**
+     * Gets value as an Integer
+     * @param varName
+     * @return value
+     * @deprecated Use {@link #getNumValue(Class, String)} instead: it handles
+     * internally with all boxed primitive numeric types.
+     */
+    @Deprecated
     public Integer      getIntegerValue(String varName);
+    
+    /**
+     * Gets value as a Long
+     * @param varName
+     * @return value
+     * @deprecated Use {@link #getNumValue(Class, String)} instead: it handles
+     * internally with all boxed primitive numeric types.
+     */
+    @Deprecated
     public Long         getLongValue(String varName);
+    
+    /**
+     * Gets a value as a single numeric type. Byte, Double, Float, Integer,
+     * Long and Short are handled.
+     * 
+     * @param type class of desired return type.
+     * @param varName variable name
+     * @return single numeric value, or {@code null}
+     * @throws NumberFormatException if the value cannot be parsed as a number
+     * of {@code type}
+     */
+    public <T extends Number> T getNumValue(Class<T> type, String varName);
+    
     public boolean      containsKey(String varName);
     public String[]     get(String varName);
     public void         clear();
