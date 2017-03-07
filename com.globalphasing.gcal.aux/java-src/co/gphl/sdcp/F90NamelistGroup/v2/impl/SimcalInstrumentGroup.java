@@ -28,15 +28,6 @@ public final class SimcalInstrumentGroup
         return SimcalInstrumentGroup.groupName;
     }
 
-    public static final String twoThetaAxis = GcalInstrumentGroup.twoThetaAxis;
-    public static final String omegaAxis    = GcalInstrumentGroup.omegaAxis;
-    public static final String kappaAxis    = GcalInstrumentGroup.kappaAxis;
-    public static final String phiAxis      = GcalInstrumentGroup.phiAxis;
-    public static final String spindleAxis  = GcalInstrumentGroup.spindleAxis;
-    public static final String trans1Axis   = GcalInstrumentGroup.trans1Axis;
-    public static final String trans2Axis   = GcalInstrumentGroup.trans2Axis;
-    public static final String trans3Axis   = GcalInstrumentGroup.trans3Axis;
-    public static final String beam         = GcalInstrumentGroup.beam;
     public static final String polPlaneN    = "POL_PLANE_N";
     public static final String polFrac      = "POL_FRAC";
     
