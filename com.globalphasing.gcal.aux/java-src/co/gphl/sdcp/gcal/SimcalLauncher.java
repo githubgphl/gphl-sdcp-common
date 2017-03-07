@@ -87,5 +87,13 @@ public class SimcalLauncher extends GcalLauncher implements Serializable {
         return Collections.unmodifiableMap(SimcalLauncher.propNames);
         
     }
+
+    /* (non-Javadoc)
+     * @see co.gphl.sdcp.gcal.GcalLauncher#useOutputOpt()
+     */
+    @Override
+    protected boolean useOutputOpt() {
+        return true;
+    }
         
 }

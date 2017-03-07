@@ -59,6 +59,8 @@ public abstract class GcalLauncher implements Serializable {
     
     private boolean outputToFile, redirectError;
     private Writer stdoutWriter, stderrWriter;
+    protected File stdout, stderr;
+    protected String lastErrLine = null;
     
     // It may seem a bit fussy to define these as constants, but
     // doing so makes them visible in the Javadocs.
@@ -218,15 +220,21 @@ public abstract class GcalLauncher implements Serializable {
             this.myLogger.info("In dry-run mode: will return without running " + this.appName);
             return;
         }
-
-        // Replace ".in" suffix with ".out" this way just in case ".in" is missing.
-        // Avoids any risk of outfile having the same filename as in, which would
-        // be a problem....
-        this.outfileName = infile.toString().replaceFirst("\\.in$", "") + ".out";
         
         List<String> cmd = new ArrayList<String>(
-                Arrays.asList( this.bin.toString(), "--input", infile.toString(), "--output", outfileName) );
+                Arrays.asList( this.bin.toString(), "--input", infile.toString() ) );
 
+        // If this application doesn't use --output, the implementing subclass is responsible
+        // for setting this.outfileName if needed.
+        if ( this.useOutputOpt() ) {
+            // Replace ".in" suffix with ".out" this way just in case ".in" is missing.
+            // Avoids any risk of outfile having the same filename as in, which would
+            // be a problem....
+            this.outfileName = infile.toString().replaceFirst("\\.(in|nml)$", "") + ".out";
+            cmd.add("--output");
+            cmd.add(this.outfileName);
+        }
+        
         String val;
         for ( Entry<String, String> e: this.args.entrySet() ) {
             cmd.add(e.getKey());
@@ -245,23 +253,22 @@ public abstract class GcalLauncher implements Serializable {
         long startTime = System.currentTimeMillis();
         this.myLogger.info("Starting " + cmd);
         
-        File stdout = null, stderr = null;
         if ( this.outputToFile ) {
-            stdout = new File( wdir, infile.getName().replaceAll("\\.in$", ".stdout") );
+            this.stdout = new File( wdir, infile.getName().replaceFirst("\\.(in|nml)$", ".stdout") );
             if ( ! this.redirectError )
-                stderr = new File( wdir, infile.getName().replaceAll("\\.in$", ".stderr") );
+                this.stderr = new File( wdir, infile.getName().replaceFirst("\\.(in|nml)$", ".stderr") );
         }
         
         ProcessLauncher launcher = new ProcessLauncher(processBuilder);
         launcher.startAndWait(
                 this.stdoutWriter == null ? new PrintWriter(System.out): this.stdoutWriter,
                 this.stderrWriter == null ? null : this.stderrWriter,
-                stdout, stderr, false, true);
+                this.stdout, this.stderr, false, true);
         this.myLogger.info(this.bin + " finished in " +
                 (System.currentTimeMillis() - startTime)/1000.0 + "s");
         
-        String lastErrLine = launcher.getLastErrLine();
-        if ( lastErrLine == null || ! lastErrLine.trim().equals("NORMAL termination") )
+        this.lastErrLine = launcher.getLastErrLine();
+        if ( this.lastErrLine == null || ! this.lastErrLine.trim().equals("NORMAL termination") )
             throw new TerminationException("Application " + cmd.get(0) + " terminated abnormally");
         
     }
@@ -391,8 +398,20 @@ public abstract class GcalLauncher implements Serializable {
             return new File(wdir, this.appName + ".in");
     }
 
+    /**
+     * Get the file that needs to be read for the results of the application.
+     * 
+     * @return file containing application's results, or {@code null}
+     */
     public File getOutputFile() {
-        return new File(this.outfileName);
+        return this.outfileName == null ? null : new File(this.outfileName);
     }
 
+    /**
+     * Does the application accept the {@code --output} option?
+     * 
+     * @return
+     */
+    protected abstract boolean useOutputOpt();
+    
 }

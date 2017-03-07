@@ -7,7 +7,7 @@
 package co.gphl.sdcp.F90NamelistGroup.v2.impl;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import co.gphl.common.namelist.F90NamelistGroup;
@@ -32,10 +32,13 @@ public final class SimcalInstrumentGroup
     public static final String polFrac      = "POL_FRAC";
     
     protected static final List<String> varnameOrder =
-            new ArrayList<String>( Arrays.asList(GcalInstrumentGroup.varnameOrder) );
-    static {
-        SimcalInstrumentGroup.varnameOrder.add(SimcalInstrumentGroup.polPlaneN);
-        SimcalInstrumentGroup.varnameOrder.add(SimcalInstrumentGroup.polFrac);
+            SimcalInstrumentGroup.initVarnameorder();
+    
+    private static List<String> initVarnameorder() {
+        List<String> retval = new ArrayList<String>( GcalInstrumentGroup.varnameOrder );
+        retval.add(SimcalInstrumentGroup.polPlaneN);
+        retval.add(SimcalInstrumentGroup.polFrac);
+        return Collections.unmodifiableList(retval);
     }
     
     private static final VarnameComparator varnameComparator =
