@@ -126,6 +126,7 @@ public class RecenLauncher extends GcalLauncher {
     
     @Override
     protected void _pre_launch(File wdir, File input) {
+        super._pre_launch(wdir, input);
         if ( ! this.okpSet )
             throw new IllegalStateException("Cannot launch " + this.appName +
                     ": have you called setOkp() ?");
