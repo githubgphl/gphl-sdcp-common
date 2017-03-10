@@ -54,6 +54,9 @@ public abstract class AbstractNamelistGroupImpl extends
     // Approximate maximum line length on output.
     protected int maxLineLen;
 
+    // Maximum number of values per line
+    protected int maxValsPerLine;
+    
     // Keep track of this explicitly, so we don't have to keep
     // fishing it back from the TreeMap and casting it.
     private VarnameComparator comparator = null;
@@ -397,6 +400,7 @@ public abstract class AbstractNamelistGroupImpl extends
         Map.Entry<String, String[]> entry;
         boolean nullOK = ( valueSeparator != null && valueSeparator.indexOf(',') > -1 );
         String outLine;
+        int valsOnLine = 0;
         while ( iter.hasNext() ) {
 
             // Get next variable and type info if available
@@ -417,6 +421,14 @@ public abstract class AbstractNamelistGroupImpl extends
                 // Always write out the separator before adding a new value
                 outLine += sep;
 
+                // Now check if the number of values already on this line
+                // is already at the maximum, if specified
+                if ( this.maxValsPerLine > 0 && valsOnLine >= this.maxValsPerLine ) {
+                    writer.append( outLine + "\n");
+                    outLine = "  ";
+                    valsOnLine = 0;
+                }
+                
                 if ( v == null || v.length() == 0 ) {
                     if ( ! nullOK )
                         throw new RuntimeException("Key '" + key + "' has one or more null values, but we are not using commas as separators");
@@ -435,6 +447,9 @@ public abstract class AbstractNamelistGroupImpl extends
                     if ( outLine.length() > this.maxLineLen ) {
                         writer.append( outLine + "\n");
                         outLine = "  ";
+                        // Don't reset valsOnLine here, because that works with
+                        // "logical" lines. If we overflow the maximum line length,
+                        // we want the logical start of line to re-sync
                     }
 
                     // Specific transformations of values on output:
@@ -445,7 +460,7 @@ public abstract class AbstractNamelistGroupImpl extends
                         outLine += v;
                     }
                 }
-
+                valsOnLine++;
                 sep = valueSeparator;
             }
 

@@ -162,5 +162,9 @@ public abstract class F90NamelistGroupImpl extends AbstractNamelistGroupImpl
         this.maxLineLen = maxLineLen;
     }
 
+    protected void setMaxValsPerLine(int maxValsPerLine) {
+        this.maxValsPerLine = maxValsPerLine;
+    }
+    
 }
 
