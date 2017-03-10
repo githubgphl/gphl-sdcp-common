@@ -254,9 +254,13 @@ public abstract class GcalLauncher implements Serializable {
         this.myLogger.info("Starting " + cmd);
         
         if ( this.outputToFile ) {
-            this.stdout = new File( wdir, infile.getName().replaceFirst("\\.(in|nml)$", ".stdout") );
+            // Deal with the various forms of input filename that we are handling
+            // including the transition to the .nml suffix (which might refer to
+            // either an input or an output file).
+            String stem = infile.getName().replaceFirst("\\.(in|nml)$", "").replaceFirst("_in$", "");
+            this.stdout = new File( wdir, stem + ".stdout" );
             if ( ! this.redirectError )
-                this.stderr = new File( wdir, infile.getName().replaceFirst("\\.(in|nml)$", ".stderr") );
+                this.stderr = new File( wdir, stem + ".stderr" );
         }
         
         ProcessLauncher launcher = new ProcessLauncher(processBuilder);
