@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Properties;
 
 import org.slf4j.Logger;
@@ -39,6 +40,8 @@ import co.gphl.common.threads.TerminationException;
  */
 public abstract class GcalLauncher implements Serializable {
 
+    private static Logger logger = LoggerFactory.getLogger(GcalLauncher.class);
+    
     protected boolean dryrun = false;
     protected File bin;
     
@@ -169,8 +172,7 @@ public abstract class GcalLauncher implements Serializable {
             String appName, String propNameNamespace, Properties properties,
             Writer stdoutWriter, Writer stderrWriter,
             boolean outputToFile, boolean redirectErrorStream ) {
-        this.myLogger = logger != null ? logger :
-            LoggerFactory.getLogger(GcalLauncher.class);
+        this.myLogger = logger != null ? logger : GcalLauncher.logger;
         
         // Save, so that we can set myLogger up again on deserialisation
         this.loggerName = this.myLogger.getName();
@@ -178,8 +180,8 @@ public abstract class GcalLauncher implements Serializable {
         if ( appName == null || appName.length() == 0 )
             throw new IllegalArgumentException("Must specify a non-null, non-zero-length application name");
         this.appName = appName;
-        this.globalPropNamePrefix = this.regulariseNamespace(propNameNamespace);
-        this.propNamePrefix = this.globalPropNamePrefix + appName + ".";
+        this.globalPropNamePrefix = GcalLauncher.regulariseNamespace(propNameNamespace);
+        this.propNamePrefix = GcalLauncher.propNamePrefix(this.globalPropNamePrefix, appName);
         this.properties = properties != null ? properties : System.getProperties();
 
         this.setupProperties();
@@ -350,17 +352,17 @@ public abstract class GcalLauncher implements Serializable {
         
     }
 
-    private String regulariseNamespace(String namespace) {
+    private static String regulariseNamespace(String namespace) {
         
         String retval = namespace;
         
         if ( retval == null || retval.length() == 0 ) {
-            this.myLogger.warn("Null/zero-length namespace prefix specified for property names. This is a bad idea");
-            return appName;
+            GcalLauncher.logger.warn("Null/zero-length namespace prefix specified for property names. This is a bad idea");
+            return "";
         }
         
         if ( retval.charAt(0) == '.' ) {
-            this.myLogger.warn("Namespace '" + retval + "' starts with '.'. Removing");
+            GcalLauncher.logger.warn("Namespace '" + retval + "' starts with '.'. Removing");
             retval = retval.substring(1);
         }
         
@@ -369,6 +371,19 @@ public abstract class GcalLauncher implements Serializable {
         
         return retval;
         
+    }
+    
+    public static String propNamePrefix(String namespace, String appName) {
+        
+        String retval = GcalLauncher.regulariseNamespace(namespace);
+        
+        
+        if ( Objects.requireNonNull(appName).isEmpty() ) {
+            GcalLauncher.logger.error("A non-empty string is required for the application name");
+            throw new IllegalArgumentException();
+        }
+        
+        return retval + appName + ".";
     }
     
     // Helper method to decode boolean values that come in as strings from

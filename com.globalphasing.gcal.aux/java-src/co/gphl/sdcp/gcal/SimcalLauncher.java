@@ -32,6 +32,10 @@ public class SimcalLauncher extends GcalLauncher implements Serializable {
 
     static private Logger logger =
             LoggerFactory.getLogger(SimcalLauncher.class);
+
+    // FIXME! Consolidate all occurences of the "simcal" literal
+    // into one place.
+    public static final String appName = "simcal";
     
     /**
      * Property used to enable and set {@code --memory-pool} command-line option
@@ -60,7 +64,7 @@ public class SimcalLauncher extends GcalLauncher implements Serializable {
     
     public SimcalLauncher(String propNameNamespace, Properties properties,
             Writer stdoutWriter, Writer stderrWriter, boolean outputToFile, boolean redirectErrorStream) {
-        super(SimcalLauncher.logger, "simcal", propNameNamespace, properties,
+        super(SimcalLauncher.logger, SimcalLauncher.appName, propNameNamespace, properties,
                 stdoutWriter, stderrWriter, outputToFile, redirectErrorStream);
     }
     
