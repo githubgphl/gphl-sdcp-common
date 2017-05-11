@@ -31,6 +31,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * FIXME! Make this reusable, so that we don't have to create
+ * a new instance for each run.
+ * 
  * @author pkeller
  *
  */
@@ -38,6 +41,8 @@ public class RecenLauncher extends GcalLauncher {
 
     private static Logger logger = 
             LoggerFactory.getLogger(RecenLauncher.class);
+    
+    public static final String appName = "recen";
     
     private static Map<String, String> propNames = null;
     
@@ -71,7 +76,7 @@ public class RecenLauncher extends GcalLauncher {
             String propNameNamespace, Properties properties,
             Writer stdoutWriter, Writer stderrWriter, boolean outputToFile,
             boolean redirectErrorStream) {
-        super(RecenLauncher.logger, "recen", propNameNamespace, properties, stdoutWriter,
+        super(RecenLauncher.logger, appName, propNameNamespace, properties, stdoutWriter,
                 stderrWriter, outputToFile, redirectErrorStream);
     }
 
@@ -79,10 +84,40 @@ public class RecenLauncher extends GcalLauncher {
         if ( Objects.requireNonNull(okp).size() != 3 )
             throw new IllegalArgumentException(
                     "Must specify a list of 3 numbers for (omega, kappa, phi)");
+        this.strOkp = "";
         for ( Double s: okp )
             this.strOkp += " " + Double.toString(s);
         this.args.put("--okp", this.strOkp);
         this.okpSet = true;
+    }
+    
+    /**
+     * Set the argument to the {@code --init-okp} option to recen. Use this method
+     * where the initial (Omega, Kappa, Phi) settings are not present in the
+     * properties used to instantiate this launcher.
+     * 
+     * @param okp
+     */
+    public void setInitOkp( List<Double> okp ) {
+        
+        String strOkp = "";
+        for ( Double s: okp )
+            strOkp += s.toString() + " ";
+        this.properties.setProperty(this.propNamePrefix + RecenLauncher.INITOKP, strOkp);
+    }
+    
+    /**
+     * Set the argument to the {@code --init-xyz} option to recen. Use this method
+     * where the initial (X, Y, Z) settings are not present in the
+     * properties used to instantiate this launcher.
+     *
+     * @param xyz
+     */
+    public void setInitXyz( List<Double> xyz ) {
+        String strXyz = "";
+        for (Double s: xyz )
+            strXyz += s.toString() + " ";
+        this.properties.setProperty(this.propNamePrefix + RecenLauncher.INITXYZ, strXyz);
     }
     
     public List<Double> getXyz() {
@@ -177,6 +212,16 @@ public class RecenLauncher extends GcalLauncher {
     @Override
     protected boolean useOutputOpt() {
         return false;
+    }
+ 
+    /**
+     * External method to check that binary is usable.
+     * 
+     * @deprecated because we need to sort out a better way of doing this
+     */
+    @Deprecated @Override
+    public boolean check_bin_ok() {
+        return super.check_bin_ok();
     }
     
 }
