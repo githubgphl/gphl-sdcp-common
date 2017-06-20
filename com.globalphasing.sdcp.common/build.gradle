@@ -1,0 +1,6 @@
+apply plugin: 'java'
+
+// FIXME! move source directory and delete this file.
+compileJava {
+    source = file('java-src')
+}

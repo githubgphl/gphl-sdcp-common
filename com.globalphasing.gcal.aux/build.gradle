@@ -1,0 +1,10 @@
+apply plugin: 'java'
+
+dependencies {
+    compile project(':com.globalphasing.sdcp.common')
+}
+
+// FIXME! Move source directory and delete this bit.
+compileJava {
+    source = file('java-src')
+}
