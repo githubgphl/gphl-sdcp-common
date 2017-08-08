@@ -116,6 +116,11 @@ public abstract class F90NamelistGroupImpl extends AbstractNamelistGroupImpl
             retval[0] = retval[0].replace(delimiter + delimiter, delimiter);
         }
 
+        // A whitespace-only string is a null in Fortran-land, so we
+        // do the substitution here
+        if ( retval[0] != null && retval[0].trim().isEmpty() )
+            retval[0] = null;
+        
         return retval;
     }
 
