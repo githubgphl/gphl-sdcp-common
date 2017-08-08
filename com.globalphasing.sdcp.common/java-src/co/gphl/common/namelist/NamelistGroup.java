@@ -13,6 +13,8 @@ package co.gphl.common.namelist;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.text.DateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -80,6 +82,17 @@ public interface NamelistGroup {
      */
     public int size(String varName);
 
+    /**
+     * Parses the value of the variable from a string into
+     * the date/time it represents. 
+     * 
+     * @param varName Name of variable of namelist group
+     * @param dateFormat Expected format of date string. If {@code null}
+     * the locale-specific format will be used.
+     * @return
+     */
+    public Date getTime(String varName, DateFormat dateFormat);
+    
     /**
      * Returns value of varName as a List of Double's
      * 

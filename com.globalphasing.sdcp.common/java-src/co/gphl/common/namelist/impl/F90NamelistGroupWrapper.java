@@ -15,8 +15,10 @@ package co.gphl.common.namelist.impl;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.Writer;
+import java.text.DateFormat;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -138,6 +140,11 @@ public abstract class F90NamelistGroupWrapper implements F90NamelistGroup, Seria
         return baseGroup.getStringValue(varName);
     }
 
+    @Override
+    public Date getTime(String varName, DateFormat dateFormat) {
+        return baseGroup.getTime(varName, dateFormat);
+    }
+    
     @Override
     public <T extends Number> T getNumValue(Class<T> type, String varName) {
         return baseGroup.getNumValue(type, varName);

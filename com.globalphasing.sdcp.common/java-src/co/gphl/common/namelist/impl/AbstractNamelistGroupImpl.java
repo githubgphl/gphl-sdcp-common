@@ -15,9 +15,12 @@ import java.io.IOException;
 import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.text.DateFormat;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -283,6 +286,24 @@ public abstract class AbstractNamelistGroupImpl extends
     @Override
     public String[] appendStringValue(String varName, String value) {
         return this.append(varName, Arrays.asList( new String[]{value}) );
+    }
+    
+    @Override
+    public Date getTime(String varName, DateFormat dateFormat) {
+        
+        String strDate = this.getStringValue(varName);
+        if ( strDate == null )
+            return null;
+        
+        if ( dateFormat == null )
+            dateFormat = DateFormat.getDateTimeInstance();
+        
+        try {
+            return dateFormat.parse(strDate);
+        } catch (ParseException e) {
+            throw new RuntimeException("Cannot parse timestamp " + strDate, e);
+        }
+        
     }
     
     @Override
