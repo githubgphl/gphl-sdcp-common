@@ -53,6 +53,7 @@ public interface NamelistGroup {
     public String[] append(String varName, List<?> values);
     public String[] append(String varName, String valueList);
     public String[] appendStringValue(String varName, String value);
+    public Boolean[] appendBooleanValue(String varName, Boolean value);
     
     public void putAll(NamelistGroup group);
     public Map<String, String[]> map();

@@ -101,6 +101,11 @@ public abstract class F90NamelistGroupWrapper implements F90NamelistGroup, Seria
     }
     
     @Override
+    public Boolean[] appendBooleanValue(String varName, Boolean value) {
+        return this.baseGroup.appendBooleanValue(varName, value);
+    }
+    
+    @Override
     public String[] append(String varName, List<?> values) {
         return baseGroup.append(varName, values);
     }

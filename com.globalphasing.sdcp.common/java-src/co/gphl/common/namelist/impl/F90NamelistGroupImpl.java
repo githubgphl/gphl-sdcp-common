@@ -69,21 +69,36 @@ public abstract class F90NamelistGroupImpl extends AbstractNamelistGroupImpl
     public List<Boolean> getBooleanList(String varName) {
         
         List<Boolean> retval = new ArrayList<>();
+        String[] values = this.get(varName);
         
-        for ( String v: this.get(varName) ) {
-            if ( v == null )
-                retval.add(null);
-            else {
-                if ( ! F90NamelistGroupImpl.boolMatcher.reset(v).matches() )
-                    throw new RuntimeException(
-                            String.format("Input value '%s' is not a valid boolean!", v ) );
-                // We must have matched either group 1 or 2 here.
-                // group 1 => true, group 2 => false
-                retval.add( F90NamelistGroupImpl.boolMatcher.group(1) != null );
+        if ( values != null ) {
+            for ( String v: values ) {
+                if ( v == null )
+                    retval.add(null);
+                else {
+                    if ( ! F90NamelistGroupImpl.boolMatcher.reset(v).matches() )
+                        throw new RuntimeException(
+                                String.format("Input value '%s' is not a valid boolean!", v ) );
+                    // We must have matched either group 1 or 2 here.
+                    // group 1 => true, group 2 => false
+                    retval.add( F90NamelistGroupImpl.boolMatcher.group(1) != null );
+                }
             }
         }
+        return retval;
+    }
+    
+    @Override
+    public Boolean[] appendBooleanValue(String varName, Boolean value) {
         
-        return null;
+        List<Boolean> retval = this.getBooleanList(varName);
+        if ( value == null )
+            this.appendStringValue(varName, null);
+        else
+            this.appendStringValue(varName, value ? ".TRUE." : ".FALSE.");
+        return retval.isEmpty() ? null : retval.toArray( new Boolean[retval.size()]);
+        
+        
     }
     
     @Override
