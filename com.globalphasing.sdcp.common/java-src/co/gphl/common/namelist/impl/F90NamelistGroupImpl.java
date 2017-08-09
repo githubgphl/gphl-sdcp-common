@@ -11,10 +11,13 @@
  *******************************************************************************/
 package co.gphl.common.namelist.impl;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import co.gphl.common.namelist.F90NamelistData;
 import co.gphl.common.namelist.F90NamelistGroup;
@@ -31,6 +34,9 @@ public abstract class F90NamelistGroupImpl extends AbstractNamelistGroupImpl
     private static final long serialVersionUID = 1758046791779837267L;
     private F90NamelistData owningData = null;
 
+    private static Matcher boolMatcher = Pattern.compile("(\\.?t).*|(\\.?f).*",
+            Pattern.CASE_INSENSITIVE).matcher("");
+    
     protected F90NamelistGroupImpl( VarnameComparator varnameComparator, Set<String> charVarnames, Integer lineNo) {
         super(varnameComparator, charVarnames, lineNo);
         this.maxLineLen = 70;
@@ -59,6 +65,27 @@ public abstract class F90NamelistGroupImpl extends AbstractNamelistGroupImpl
 
     }
 
+    @Override
+    public List<Boolean> getBooleanList(String varName) {
+        
+        List<Boolean> retval = new ArrayList<>();
+        
+        for ( String v: this.get(varName) ) {
+            if ( v == null )
+                retval.add(null);
+            else {
+                if ( ! F90NamelistGroupImpl.boolMatcher.reset(v).matches() )
+                    throw new RuntimeException(
+                            String.format("Input value '%s' is not a valid boolean!", v ) );
+                // We must have matched either group 1 or 2 here.
+                // group 1 => true, group 2 => false
+                retval.add( F90NamelistGroupImpl.boolMatcher.group(1) != null );
+            }
+        }
+        
+        return null;
+    }
+    
     @Override
     protected List<String> splitValueList ( String value ) {
 

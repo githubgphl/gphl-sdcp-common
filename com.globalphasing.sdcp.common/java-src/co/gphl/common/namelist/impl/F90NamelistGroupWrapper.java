@@ -97,7 +97,7 @@ public abstract class F90NamelistGroupWrapper implements F90NamelistGroup, Seria
 
     @Override
     public String[] appendStringValue(String varName, String value) {
-        return this.append(varName, Arrays.asList( new String[] {value}) );
+        return this.baseGroup.append(varName, Arrays.asList( new String[] {value}) );
     }
     
     @Override
@@ -123,6 +123,11 @@ public abstract class F90NamelistGroupWrapper implements F90NamelistGroup, Seria
     @Override
     public <T extends Number> List<T> getNumList(Class<T> type, String varName) {
         return baseGroup.getNumList(type, varName);
+    }
+    
+    @Override
+    public List<Boolean> getBooleanList(String varName) {
+        return baseGroup.getBooleanList(varName);
     }
     
     @Override @Deprecated

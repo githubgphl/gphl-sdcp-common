@@ -93,6 +93,15 @@ public interface NamelistGroup {
      */
     public Date getTime(String varName, DateFormat dateFormat);
     
+    
+    /**
+     * Returns a list of values that represent booleans
+     * 
+     * @param varName Name of variable of namelist group
+     * @return value sequence
+     */
+    public List<Boolean> getBooleanList(String varName);
+    
     /**
      * Returns value of varName as a List of Double's
      * 
