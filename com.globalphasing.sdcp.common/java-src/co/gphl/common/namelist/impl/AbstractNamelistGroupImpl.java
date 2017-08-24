@@ -317,9 +317,15 @@ public abstract class AbstractNamelistGroupImpl extends
             // rather than using reflection......
             Method valueOf = type.getDeclaredMethod("valueOf", String.class);
             String[] vals = this.get(varName);
-            List<T> retval = new ArrayList<T>(vals.length);
-            for ( String value: vals ) {
+            
+            List<T> retval = null;
+            if ( vals == null || vals.length == 0 )
+                retval = Collections.emptyList();
+            else {
+                retval = new ArrayList<T>(vals.length);
+                for ( String value: vals ) {
                     retval.add( value == null ? null : type.cast(valueOf.invoke(null, value)) );
+                }
             }
             return retval;
         } catch (NoSuchMethodException | SecurityException e) {
