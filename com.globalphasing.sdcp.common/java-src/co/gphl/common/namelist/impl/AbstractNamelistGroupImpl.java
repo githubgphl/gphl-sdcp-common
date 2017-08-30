@@ -362,13 +362,10 @@ public abstract class AbstractNamelistGroupImpl extends
         String[] vals = this.get(varName);
         if ( vals != null ) {
             if ( vals.length == 1 )
-                // FIXME! We strip trailing whitespace to cope with F90 quoting rules
-                // and F90 whitespace handling, so it should be done in
-                // F90NamelistGroupImpl.splitNextValue, not here.
-                retval = vals[0].replaceFirst("\\s+$", "");
+                retval = vals[0];
             else
                 throw new RuntimeException("Namelist group " +
-                        " variable " + varName + "; 0 or 1 values allowed but " + 
+                        " variable " + varName + "; 0 or 1 values expected but " + 
                         vals.length + " found");
         }
         return retval;
