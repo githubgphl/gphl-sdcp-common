@@ -25,6 +25,9 @@ import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CoderResult;
+import java.nio.charset.CodingErrorAction;
+import java.util.Arrays;
 
 /**
  * Class to use a {@link PrintStream} to output the data being received
@@ -287,6 +290,9 @@ public class StreamPrinter extends Thread {
         boolean gotEol = false;
         
         CharsetDecoder decoder = StreamPrinter.charset.newDecoder();
+        decoder.onMalformedInput(CodingErrorAction.REPORT);
+        decoder.onUnmappableCharacter(CodingErrorAction.REPORT);
+        CoderResult decodeResult = null;
         
         do {
 
@@ -346,10 +352,10 @@ public class StreamPrinter extends Thread {
              * the buffer contents is not an efficiency concern here, unlike
              * in the line-by-line case.
              */ 
-            if ( bbuf.position() > 0 ) {
+            while ( bbuf.position() > 0 ) {
                 
                 bbuf.flip();
-                decoder.decode(bbuf, cbuf, readThisTime < 0);
+                decodeResult = decoder.decode(bbuf, cbuf, readThisTime < 0);
                 cbuf.flip();
                 
                 cpos = cbuf.position();
@@ -361,6 +367,32 @@ public class StreamPrinter extends Thread {
                 }
                 if ( fileWriter != null )
                     fileWriter.write(cbuf.array(), cpos, cbuf.remaining());
+
+                if ( decodeResult.isError() ) {
+                    String msg = "\nError: Attempt to decode output of subprocess returned a\n"
+                            + CoderResult.class.getName() + " value of " + decodeResult.toString() + "\n";
+                    
+                    int start = bbuf.position(), 
+                            len = decodeResult.length(),
+                            nBytes = Math.min(len, 10);
+                    byte[] badBytes = Arrays.copyOfRange(barray, start, start + nBytes);
+                    String badBytesStr = Arrays.toString(badBytes);
+                    if ( nBytes < len )
+                        badBytesStr = badBytesStr.replaceFirst("\\]\\s*$", ", ...]");
+
+                    msg += "  Undecodable bytes are (or start with): " + badBytesStr + "\n";
+                    
+                    if ( this.outputWriter != null ) {
+                        this.outputWriter.write(msg);
+                        this.outputWriter.flush();
+                    }
+                    if ( fileWriter != null )
+                        fileWriter.write(msg);
+                    
+                    bbuf.position( bbuf.position() + decodeResult.length() );
+                    decodeResult = null;
+                    
+                }
                 
                 // Fiddly code to get last line from buffer, allowing for the fact
                 // that the last line may be split across more than one read from
@@ -369,7 +401,7 @@ public class StreamPrinter extends Thread {
                 // (most methods/expressions that return an instance of String involve
                 // copying character data around).
                 
-                if ( this.captureLastLine && clim >= lineSepLen ) {
+                else if ( this.captureLastLine && clim >= lineSepLen ) {
                 
                     // Where in the buffer do we step backwards from, to look for the start of the last line?
                     // The end of the buffer, unless the buffer ends with a newline, in which case
