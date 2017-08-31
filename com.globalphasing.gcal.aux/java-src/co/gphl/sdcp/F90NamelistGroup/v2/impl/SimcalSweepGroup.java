@@ -31,12 +31,6 @@ public final class SimcalSweepGroup
         return SimcalSweepGroup.groupName;
     }
 
-    public static final String goniostatSettingId        = GcalSweepGroup.goniostatSettingId;
-    public static final String centredGoniostatSettingId = GcalSweepGroup.centredGoniostatSettingId;
-    public static final String beamSettingId             = GcalSweepGroup.beamSettingId;
-    public static final String detectorSettingId         = GcalSweepGroup.detectorSettingId;
-    public static final String beamstopSettingId         = GcalSweepGroup.beamstopSettingId;
-    public static final String startDeg                  = GcalSweepGroup.startDeg;
     public static final String exposure                  = "EXPOSURE";
     public static final String stepDeg                   = "STEP_DEG";
     public static final String nFrames                   = "N_FRAMES";

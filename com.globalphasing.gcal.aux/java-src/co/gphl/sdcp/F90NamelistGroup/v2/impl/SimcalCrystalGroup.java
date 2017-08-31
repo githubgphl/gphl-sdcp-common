@@ -31,15 +31,6 @@ public final class SimcalCrystalGroup
         return SimcalCrystalGroup.groupName;
     }
 
-    public static final String sgName        = CrystalGroup.sgName;
-    public static final String cellDim       = CrystalGroup.cellDim;
-    public static final String cellAngDeg    = CrystalGroup.cellAngDeg;
-    public static final String uMatAngDeg    = CrystalGroup.uMatAngDeg;
-    public static final String cellAAxis     = CrystalGroup.cellAAxis;
-    public static final String cellBAxis     = CrystalGroup.cellBAxis;
-    public static final String cellCAxis     = CrystalGroup.cellCAxis;
-    public static final String orientMode    = CrystalGroup.orientMode;
-    public static final String resLimitDef   = CrystalGroup.resLimitDef;
     public static final String cellRefAngDeg = "CELL_REF_ANG_DEG";
     public static final String cellDimSd     = "CELL_DIM_SD";
     public static final String cellAngSdDeg  = "CELL_ANG_SD_DEG";
