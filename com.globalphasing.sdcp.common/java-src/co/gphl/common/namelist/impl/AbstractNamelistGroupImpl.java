@@ -378,17 +378,17 @@ public abstract class AbstractNamelistGroupImpl extends
         if ( val == null )
             return null;
         if ( type == Double.class )
-            return (T) Double.valueOf(val);
+            return type.cast( Double.valueOf(val) );
         if ( type == Float.class )
-            return (T) Float.valueOf(val);
+            return type.cast( Float.valueOf(val) );
         if ( type == Integer.class )
-            return (T) Integer.valueOf(val);
+            return type.cast( Integer.valueOf(val) );
         if ( type == Long.class )
-            return (T) Long.valueOf(val);
+            return type.cast( Long.valueOf(val) );
         if ( type == Short.class )
-            return (T) Short.valueOf(val);
+            return type.cast( Short.valueOf(val) );
         if ( type == Byte.class )
-            return (T) Byte.valueOf(val);
+            return type.cast( Byte.valueOf(val) );
         
         throw new IllegalArgumentException("This method cannot return values of type " + type.getName() );
         
