@@ -213,7 +213,7 @@ public abstract class AbstractNamelistGroupImpl extends
     public String[] put( String varName, Enum<?>[] valueArray ) {
         List<String> valueList = new ArrayList<String>();
         for ( Enum<?> e: valueArray) {
-            valueList.add(e.toString());
+            valueList.add( e == null ? null : e.toString());
         }
 
         String[] values = new String[valueList.size()];
@@ -222,7 +222,7 @@ public abstract class AbstractNamelistGroupImpl extends
 
     @Override
     public String[] put(String varName, Number value) {
-        return this.put(varName, value.toString());
+        return this.put(varName, value == null ? null : value.toString());
     }
 
     @Override
@@ -232,8 +232,11 @@ public abstract class AbstractNamelistGroupImpl extends
             return null;
         
         String[] valueList = new String[values.size()];
-        for ( int i = 0; i < valueList.length; i ++ )
-            valueList[i] = values.get(i).toString();
+        Object val;
+        for ( int i = 0; i < valueList.length; i ++ ) {
+            val = values.get(i);
+            valueList[i] = val == null ? null : val.toString();
+        }
 
         return this.put(varName, valueList);
     }
@@ -263,7 +266,7 @@ public abstract class AbstractNamelistGroupImpl extends
     
     @Override
     public String[] append(String varName, Number value) {
-        return this.append(varName, value.toString());
+        return this.append(varName, value == null ? null : value.toString());
     }
 
     @Override
@@ -277,8 +280,11 @@ public abstract class AbstractNamelistGroupImpl extends
             return vals;
         
         String[] newVals = Arrays.copyOf(vals, vals.length + values.size());
-        for ( int i = 0; i < values.size(); i++ )
-            newVals[vals.length+i] = values.get(i).toString();
+        Object val;
+        for ( int i = 0; i < values.size(); i++ ) {
+            val = values.get(i);
+            newVals[vals.length+i] = val == null ? null : val.toString();
+        }
         return this.put(varName, newVals);
         
     }
