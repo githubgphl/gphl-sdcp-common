@@ -47,16 +47,12 @@ public abstract class GcalGoniostatGroup extends F90NamelistGroupImpl
     
     // Added by hand
     public static final List<String> rotAxisOrder =
-            Collections.unmodifiableList( 
-                    Arrays.asList( new String[] {"PHI", "KAPPA", "OMEGA"} )
-                    );
-    public static final String fRotAxis="%s_AXIS";
+            Collections.unmodifiableList( Arrays.asList( "PHI", "KAPPA", "OMEGA" ) );
+    private static final String fRotAxis="%s_AXIS";
 
     public static final List<Character> transAxisOrder =
-            Collections.unmodifiableList(
-                    Arrays.asList( new Character[] {'1', '2', '3'} )
-                    );
-    public static final String fTransAxis="TRANS_%c_AXIS";
+            Collections.unmodifiableList( Arrays.asList( '1', '2', '3' ) );
+    private static final String fTransAxis="TRANS_%c_AXIS";
 
     public static String rotAxisName(int i) {
         return String.format(fRotAxis, rotAxisOrder.get(i));
