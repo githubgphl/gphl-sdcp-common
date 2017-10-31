@@ -1,15 +1,10 @@
-/*
- * Copyright © 2014 by Global Phasing Ltd. All rights reserved
+/*******************************************************************************
+ * Copyright (c) 2014 Global Phasing Ltd.
  *
- * This software is proprietary to and embodies the confidential
- * technology of Global Phasing Limited (GPhL).
- *
- * Any possession or use (including but not limited to duplication, reproduction
- * and dissemination) of this software (in either source or compiled form) is
- * forbidden except where an agreement with GPhL that permits such possession or
- * use is in force.
- *
- */
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ *******************************************************************************/
 
 package co.gphl;
 
