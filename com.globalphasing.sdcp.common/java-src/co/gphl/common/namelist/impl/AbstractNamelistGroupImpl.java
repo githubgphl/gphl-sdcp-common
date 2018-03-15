@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.UUID;
 
 import co.gphl.common.namelist.NamelistGroup;
 import co.gphl.common.namelist.F90NamelistValueException;
@@ -304,6 +305,20 @@ public abstract class AbstractNamelistGroupImpl extends
             return dateFormat.parse(strDate);
         } catch (ParseException e) {
             throw new RuntimeException("Cannot parse timestamp " + strDate, e);
+        }
+        
+    }
+    
+    @Override
+    public UUID getUuid(String varName) {
+        String strUuid = this.getStringValue(varName);
+        if ( strUuid == null || strUuid.isEmpty() )
+            return null;
+        
+        try {
+            return UUID.fromString(strUuid);
+        } catch ( IllegalArgumentException e ) {
+            throw new RuntimeException("Cannot parse value into UUID: " + strUuid, e);
         }
         
     }

@@ -14,6 +14,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 public interface NamelistGroup {
 
@@ -90,6 +91,17 @@ public interface NamelistGroup {
      */
     public Date getTime(String varName, DateFormat dateFormat);
     
+    
+    /**
+     * Parses a single value assigned to the variable from a string
+     * into the UUID that it represents.
+     * 
+     * @param varName Name of variable of namelist group
+     * @return
+     * @throws RuntimeException if a non-empty value assigned
+     * to {@code varName} cannot be parsed into a UUID
+     */
+    public UUID getUuid(String varName);
     
     /**
      * Returns a list of values that represent booleans

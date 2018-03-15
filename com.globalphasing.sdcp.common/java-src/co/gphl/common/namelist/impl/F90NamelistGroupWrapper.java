@@ -18,6 +18,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import co.gphl.common.namelist.F90NamelistData;
 import co.gphl.common.namelist.F90NamelistGroup;
@@ -149,6 +150,11 @@ public abstract class F90NamelistGroupWrapper implements F90NamelistGroup, Seria
     @Override
     public Date getTime(String varName, DateFormat dateFormat) {
         return baseGroup.getTime(varName, dateFormat);
+    }
+    
+    @Override
+    public UUID getUuid(String varName) {
+        return baseGroup.getUuid(varName);
     }
     
     @Override
