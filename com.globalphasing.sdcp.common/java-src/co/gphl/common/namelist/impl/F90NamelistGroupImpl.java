@@ -62,6 +62,19 @@ public abstract class F90NamelistGroupImpl extends AbstractNamelistGroupImpl
     }
 
     @Override
+    public List<Boolean> putBooleanValue(String varName, Boolean value) {
+        
+        List<Boolean> retval = this.getBooleanList(varName);
+        
+        if ( value == null )
+            this.remove(varName);
+        else
+            this.put(varName, value ? ".TRUE." : ".FALSE." );
+        return retval;
+        
+    }
+        
+    @Override
     public List<Boolean> getBooleanList(String varName) {
         
         List<Boolean> retval = new ArrayList<>();

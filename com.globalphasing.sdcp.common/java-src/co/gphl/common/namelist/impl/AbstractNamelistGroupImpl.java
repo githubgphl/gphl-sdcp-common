@@ -433,6 +433,17 @@ public abstract class AbstractNamelistGroupImpl extends
     }
 
 
+    @Override
+    public Boolean getBooleanValue(String varName) {
+        List<Boolean> retval = this.getBooleanList(varName);
+        switch ( retval.size() ) {
+        case 0: return null;
+        case 1: return retval.get(0);
+        default: throw new RuntimeException( String.format(
+                "Expecting 1 value assigned to '%s', got %d", varName, retval.size()));
+        }
+    }
+
     public void write(Writer writer, String valueSeparator) throws IOException {
 
         // We use an iterator to loop over namelist group variables,

@@ -103,6 +103,11 @@ public abstract class F90NamelistGroupWrapper implements F90NamelistGroup, Seria
     }
     
     @Override
+    public List<Boolean> putBooleanValue(String varName, Boolean value) {
+        return this.baseGroup.putBooleanValue(varName, value);
+    }
+    
+    @Override
     public String[] append(String varName, List<?> values) {
         return baseGroup.append(varName, values);
     }
@@ -130,6 +135,11 @@ public abstract class F90NamelistGroupWrapper implements F90NamelistGroup, Seria
     @Override
     public List<Boolean> getBooleanList(String varName) {
         return baseGroup.getBooleanList(varName);
+    }
+    
+    @Override
+    public Boolean getBooleanValue(String varName) {
+        return baseGroup.getBooleanValue(varName);
     }
     
     @Override @Deprecated

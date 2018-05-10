@@ -112,6 +112,17 @@ public interface NamelistGroup {
     public List<Boolean> getBooleanList(String varName);
     
     /**
+     * Returns the value of varName as a single Boolean
+     * 
+     * @param varName Name of variable of namelist group
+     * @return value
+     * @throws RuntimeException if more than one value has been assigned
+     * to {@code varName}
+     */
+    public Boolean getBooleanValue(String varName);
+
+
+    /**
      * Returns value of varName as a List of Double's
      * 
      * @param varName Name of variable of namelist group
@@ -223,5 +234,20 @@ public interface NamelistGroup {
      * @see NamelistData#setCommaSeparator(boolean)
      */
     public void write(Writer writer, String valueSeparator) throws IOException;
+
+    
+    /**
+     * Replaces assignment to {@code varName} with a single boolean value.
+     * Implementations of this method may call {@link #getBooleanList(String)}
+     * internally, thus any previous values assigned to {@code varName} must
+     * have been valid booleans or {@code null} for this method to be applicable.
+     * If this is not known to be true, clear the assignments with
+     * {@link Map#remove(Object)} first.
+     * 
+     * @param varName
+     * @param value
+     * @return previous assignment
+     */
+    public List<Boolean> putBooleanValue(String varName, Boolean value);
 
 }
