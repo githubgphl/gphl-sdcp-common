@@ -26,7 +26,7 @@ public interface ApplicationSpec extends PropertyDefinition {
 
     @Override
     default int getMinArgs() {
-        return 1;
+        return 0;
     }
     
     @Override
@@ -34,8 +34,36 @@ public interface ApplicationSpec extends PropertyDefinition {
         return 1;
     }
  
+    /**
+     * Tests for validity of the path to the application. To be
+     * valid, if the application is {@link #isEnabled() enabled}
+     * the path must:
+     * 
+     * <ul><li>exist on the filesystem</li>
+     * <li>be absolute</li>
+     * <li>be executable</li></ul>
+     * 
+     * Note that this method will return true if the application is
+     * not enabled: it is intended to be used in early checks on the
+     * property assignments, and from that point of view an optional
+     * application that has been disabled is always valid.
+     * 
+     * @return {@code true} if the specification of the application is valid.
+     */
     default boolean isValid() {
         return State.getState(this).isValid();
+    }
+    
+    /**
+     * Tests whether an optional application has been enabled for use.
+     * By default, applications are enabled (because they have a default
+     * value that is not allowed to be an empty string).
+     * 
+     * @return {@code false} if an empty string has been explicitly assigned,
+     * {@code true} otherwise. 
+     */
+    default boolean isEnabled() {
+        return !this.getPropValue().isEmpty();
     }
     
     default Path getPath() {
@@ -55,6 +83,12 @@ public interface ApplicationSpec extends PropertyDefinition {
         public static void register(ApplicationSpec spec, String namespace, String propName,
                 String defaultValue, PropertyDefinition dirProperty) {
             
+            // We may reconsider this in the future if an application is allowed to be
+            // disabled by default.
+            if ( defaultValue == null || defaultValue.isEmpty() )
+                throw new IllegalArgumentException("BUG: the default value for " + spec.getClass().getName() + 
+                        " is null or an empty string. This is not allowed");
+            
             PropertyDefinition.State.register(spec, new State(spec, namespace, propName, defaultValue, dirProperty));
             
         }
@@ -64,7 +98,7 @@ public interface ApplicationSpec extends PropertyDefinition {
             // We don't need to set the description in the state here.
             super(spec, namespace, propName, 
                     Objects.requireNonNull(defaultValue, "BUG: A WorkflowApplicationSpec must have a default value set"),
-                    1, 1, "");
+                    0, 1, "");
             
             if ( this.defaultValue.isEmpty() )
                 throw new IllegalArgumentException("BUG: A WorkflowApplicationSpec cannot have an empty default value");
@@ -109,6 +143,17 @@ public interface ApplicationSpec extends PropertyDefinition {
             // We set this.path from the start, so that if we get here from getPath() we can 
             // report as much of the path as was set up if validation fails.
             String value = this.property.getPropValue();
+            
+            // If the property has been defined with no argument (something like
+            // -Dname) this implies that we are trying to unset/disable the use
+            // of the application by assigning an empty string.
+            // value should never be null at this point, because the default value
+            // of an ApplicationSpec is always a non-empty string.
+            if ( value.isEmpty() ) {
+                this.valid = true;
+                return;
+            }
+            
             this.path = Paths.get(value);
 
             if ( !this.path.isAbsolute() ) {
