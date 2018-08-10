@@ -13,19 +13,39 @@ package co.gphl.common.properties;
  */
 
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Properties;
 
 /**
+ * Interface that encapsulates the definition and value of a Java property.
+ * This interface is intended to be implemented by enums.
+ * 
  * @author pkeller
  *
  */
 public interface PropertyDefinition {
 
-    String getPropName();
-    String getDefaultValue();
-    int getMinArgs();
-    int getMaxArgs();
-    String getDescription();
+    default String getPropName() {
+        return State.getState(this).propName;
+    }
+    
+    default String getDefaultValue() {
+        return State.getState(this).defaultValue;
+    }
+    
+    default int getMinArgs() {
+        return State.getState(this).minArgs;
+    }
+    
+    default int getMaxArgs() {
+        return State.getState(this).maxArgs;
+    }
+    
+    default String getDescription() {
+        return State.getState(this).description;
+    }
     
     
     /**
@@ -35,7 +55,9 @@ public interface PropertyDefinition {
      * @return value assigned to the property
      */
     default String getPropValue() {
-        String val = System.getProperty(getPropName(), getDefaultValue());
+        String val = State.properties == null ?  
+                System.getProperty(getPropName(), getDefaultValue()) :
+                    State.properties.getProperty(getPropName(), getDefaultValue());
         return val == null ? null : val.trim();
     }
     
@@ -80,6 +102,98 @@ public interface PropertyDefinition {
         String[] args = val.split("\\s+");
         
         return args.length >= this.getMinArgs() && args.length <= this.getMaxArgs();
+    }
+    
+    static class State {
+        
+        private static final Map<PropertyDefinition, State> map = new HashMap<>();
+
+        private static Properties properties = null;
+        
+        protected final String propName;
+        protected final String description;
+        protected final String defaultValue;
+        protected final int minArgs, maxArgs;
+        protected final PropertyDefinition property;
+
+        
+        /**
+         * Specify the properties which will be used by future calls to
+         * {@link PropertyDefinition#getPropValue()}.
+         * 
+         * @param properties Properties to query, or {@code null}
+         * to query {@link System#getProperties()}.
+         */
+        public static void setProperties(Properties properties) {
+            State.properties = properties;
+        }
+
+        public static void register(PropertyDefinition property, String namespace,
+                String propName, String defaultValue, int nArgs,
+                String description) {
+            
+            register(property, namespace, propName, defaultValue,
+                    nArgs, nArgs, description);
+            
+        }
+        
+        public static void register(PropertyDefinition property, String namespace,
+                String propName, String defaultValue, int minArgs, int maxArgs,
+                String description) {
+        
+            register(property, new State(property, namespace, propName,
+                    defaultValue, minArgs, maxArgs, description ) );
+        }
+        
+        protected static void register(PropertyDefinition property, 
+                State state) {
+            map.put(property, state);
+        }
+        
+        /* This method of keeping track of instances and their state allows us to:
+         * 
+         * (1) hide every method of the State class except the method to register an instance
+         * (2) avoid declaring a public getState() method in the outer interface definition
+         * 
+         * N.B. We don't store the value in the State instance, because 'this.getPropValue()'
+         * won't work until after the new instance has been registered, and we want to use the
+         * default implementation from PropertyDefinition for this.
+         * 
+         */
+        protected State ( PropertyDefinition property, String namespace,
+                String propName, String defaultValue, int minArgs, int maxArgs,
+                String description ) {
+            
+            String myNs = Objects.requireNonNull(namespace, "BUG: Property namespace cannot be null");
+            if ( myNs.isEmpty() )
+                throw new IllegalArgumentException("BUG: Property namespace cannot be an empty string");
+            
+            if ( ! myNs.endsWith(".") )
+                myNs += '.';
+
+            String myName = Objects.requireNonNull(propName, "BUG: a property name cannot be null");
+            if ( myName.isEmpty() )
+                throw new IllegalArgumentException("BUG: a property name cannot be an empty string");
+
+            this.propName = myNs + myName;            
+            this.defaultValue = defaultValue;
+            
+            if ( minArgs < 0 || maxArgs < 0 || maxArgs < minArgs ) 
+                throw new IllegalArgumentException(
+                        String.format("BUG: bad values for minArgs/MaxArgs: %d/%d",
+                                minArgs, maxArgs) );
+            
+            this.minArgs = minArgs;
+            this.maxArgs = maxArgs;
+            this.description = description;
+            this.property = property;
+            
+        }
+        
+        protected static State getState(PropertyDefinition key) {
+            return State.map.get(key);
+        }
+        
     }
     
 }
