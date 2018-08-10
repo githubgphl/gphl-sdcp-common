@@ -3,7 +3,8 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Gcal Aux
 Bundle-SymbolicName: com.globalphasing.gcal.aux
 Bundle-Version: 1.0.0.qualifier
-Export-Package: co.gphl.sdcp.F90Namelist.v2,
+Export-Package: co.gphl.emulator.common,
+ co.gphl.sdcp.F90Namelist.v2,
  co.gphl.sdcp.F90NamelistGroup.v2.impl,
  co.gphl.sdcp.gcal
 Require-Bundle: com.globalphasing.sdcp.common;bundle-version="1.0.0";visibility:=reexport
