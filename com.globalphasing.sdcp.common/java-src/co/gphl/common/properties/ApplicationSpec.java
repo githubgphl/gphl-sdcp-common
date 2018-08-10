@@ -70,13 +70,26 @@ public interface ApplicationSpec extends PropertyDefinition {
         return State.getState(this).getPath();
     }
     
-
+    /**
+     * Get the basename of the name of the property used to define the location or name
+     * of the application executable file. This is used as a "logical" application name,
+     * and is incorporated into the names of various directories and files that are
+     * handled by the workflow.
+     * 
+     * @return basename of the property name
+     */
+    default String getBasename() {
+        return State.getState(this).basename;
+    }
+    
     static class State extends PropertyDefinition.State {
         
         private static Logger logger = Logger.getLogger(State.class.getCanonicalName());
         
         
         private final PropertyDefinition dirProperty;
+        private final String basename;
+        
         private Boolean valid = null;
         private Path path = null;
 
@@ -90,16 +103,18 @@ public interface ApplicationSpec extends PropertyDefinition {
                         " is null or an empty string. This is not allowed");
             
             PropertyDefinition.State.register(spec, new State(spec, namespace, 
-                    basename + ".bin", defaultValue, dirProperty));
+                    basename, defaultValue, dirProperty));
             
         }
         
         private State(ApplicationSpec spec, String namespace, String basename, String defaultValue, PropertyDefinition dirProperty) {
             
             // We don't need to set the description in the state here.
-            super(spec, namespace, basename, 
+            super(spec, namespace, basename + ".bin", 
                     Objects.requireNonNull(defaultValue, "BUG: A WorkflowApplicationSpec must have a default value set"),
                     0, 1, "");
+            
+            this.basename = basename;
             
             if ( this.defaultValue.isEmpty() )
                 throw new IllegalArgumentException("BUG: A WorkflowApplicationSpec cannot have an empty default value");
