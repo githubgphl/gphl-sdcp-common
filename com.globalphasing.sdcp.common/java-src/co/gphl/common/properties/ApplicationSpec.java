@@ -80,7 +80,7 @@ public interface ApplicationSpec extends PropertyDefinition {
         private Boolean valid = null;
         private Path path = null;
 
-        public static void register(ApplicationSpec spec, String namespace, String propName,
+        public static void register(ApplicationSpec spec, String namespace, String basename,
                 String defaultValue, PropertyDefinition dirProperty) {
             
             // We may reconsider this in the future if an application is allowed to be
@@ -89,14 +89,15 @@ public interface ApplicationSpec extends PropertyDefinition {
                 throw new IllegalArgumentException("BUG: the default value for " + spec.getClass().getName() + 
                         " is null or an empty string. This is not allowed");
             
-            PropertyDefinition.State.register(spec, new State(spec, namespace, propName, defaultValue, dirProperty));
+            PropertyDefinition.State.register(spec, new State(spec, namespace, 
+                    basename + ".bin", defaultValue, dirProperty));
             
         }
         
-        private State(ApplicationSpec spec, String namespace, String propName, String defaultValue, PropertyDefinition dirProperty) {
+        private State(ApplicationSpec spec, String namespace, String basename, String defaultValue, PropertyDefinition dirProperty) {
             
             // We don't need to set the description in the state here.
-            super(spec, namespace, propName, 
+            super(spec, namespace, basename, 
                     Objects.requireNonNull(defaultValue, "BUG: A WorkflowApplicationSpec must have a default value set"),
                     0, 1, "");
             

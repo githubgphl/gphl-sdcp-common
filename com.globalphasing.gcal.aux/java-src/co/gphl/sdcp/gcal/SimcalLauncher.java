@@ -62,7 +62,7 @@ public class SimcalLauncher extends GcalLauncher implements Serializable {
     
     public SimcalLauncher(String propNameNamespace, Properties properties,
             Writer stdoutWriter, Writer stderrWriter, boolean outputToFile, boolean redirectErrorStream) {
-        super(SimcalLauncher.logger, EmulatorApplicationSpec.SIMCALLBIN, propNameNamespace, properties,
+        super(SimcalLauncher.logger, EmulatorApplicationSpec.SIMCAL, propNameNamespace, properties,
                 stdoutWriter, stderrWriter, outputToFile, redirectErrorStream);
         // FIXME! SDCP-226 OK, sort of, to do this here because simcal is only used
         // in an emulation context (c.f. hard-coded spec param), but we should really

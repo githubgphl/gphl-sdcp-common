@@ -20,14 +20,17 @@ import co.gphl.common.properties.ApplicationSpec;
  */
 public enum EmulatorApplicationSpec implements ApplicationSpec {
 
-    SIMCALLBIN("simcal.bin", "simcal"),
-    RECENBIN("recen.bin", "recen");
+    SIMCAL,
+    RECEN;
     
-    EmulatorApplicationSpec(String name, String defaultValue) {
+    EmulatorApplicationSpec() {
+        
+        String basename = this.name().toLowerCase();
         
         ApplicationSpec.State.register(this, EmulatorProperty.NAMESPACE, 
-                name, defaultValue, EmulatorProperty.BLBINDIR);
+                basename, basename, EmulatorProperty.BLBINDIR);
         
     }
-        
+
+    
 }
