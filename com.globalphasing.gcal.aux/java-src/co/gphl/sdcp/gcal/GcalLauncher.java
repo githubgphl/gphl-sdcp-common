@@ -26,6 +26,7 @@ import java.util.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import co.gphl.common.properties.ApplicationSpec;
 import co.gphl.common.threads.ProcessLauncher;
 import co.gphl.common.threads.TerminationException;
 
@@ -38,7 +39,6 @@ public abstract class GcalLauncher implements Serializable {
     private static Logger logger = LoggerFactory.getLogger(GcalLauncher.class);
     
     protected boolean dryrun = false;
-    protected File bin;
     
     // Logger does not implement Serializable, so we mark it as transient
     // and reconnect it by hand during de-serialisation
@@ -46,7 +46,8 @@ public abstract class GcalLauncher implements Serializable {
     private transient Logger myLogger;
     private String loggerName;
     
-    protected final String globalPropNamePrefix, propNamePrefix, appName;
+    protected final String globalPropNamePrefix, propNamePrefix;
+    protected final ApplicationSpec appSpec;
     protected final Properties properties;
     protected String outfileName;
     private boolean uniqueFilenames;
@@ -131,7 +132,7 @@ public abstract class GcalLauncher implements Serializable {
         // state
         this.globalPropNamePrefix = "";
         this.propNamePrefix = "";
-        this.appName = "";
+        this.appSpec = null;
         this.properties = new Properties();
     };
     
@@ -164,7 +165,8 @@ public abstract class GcalLauncher implements Serializable {
      * @see ProcessBuilder#redirectErrorStream()
      */
     protected GcalLauncher(Logger logger,
-            String appName, String propNameNamespace, Properties properties,
+            ApplicationSpec appSpec,
+            String propNameNamespace, Properties properties,
             Writer stdoutWriter, Writer stderrWriter,
             boolean outputToFile, boolean redirectErrorStream ) {
         this.myLogger = logger != null ? logger : GcalLauncher.logger;
@@ -172,19 +174,15 @@ public abstract class GcalLauncher implements Serializable {
         // Save, so that we can set myLogger up again on deserialisation
         this.loggerName = this.myLogger.getName();
         
-        if ( appName == null || appName.length() == 0 )
-            throw new IllegalArgumentException("Must specify a non-null, non-zero-length application name");
-        this.appName = appName;
+        this.appSpec = appSpec;
+        
         this.globalPropNamePrefix = GcalLauncher.regulariseNamespace(propNameNamespace);
-        this.propNamePrefix = GcalLauncher.propNamePrefix(this.globalPropNamePrefix, appName);
+        this.propNamePrefix = GcalLauncher.propNamePrefix(this.globalPropNamePrefix,
+                this.appSpec.getDefaultValue());
         this.properties = properties != null ? properties : System.getProperties();
 
         this.setupProperties();
         
-        if ( ! this.check_bin_ok() )
-            this.myLogger.warn("Specified executable " +
-                    ( this.bin == null ? "<null>" : this.bin.toString() ) + " is not executable");
-
         this.stdoutWriter = stdoutWriter;
         this.stderrWriter = stderrWriter;
         this.outputToFile = outputToFile;
@@ -201,12 +199,6 @@ public abstract class GcalLauncher implements Serializable {
     
     protected void _pre_launch(File wdir, File input) {
         
-        if ( ! this.check_bin_ok() ) {
-            String binName = this.bin == null ? "<null>" : this.bin.toString();
-            this.myLogger.error("Cannot launch binary " + binName);
-            throw new IllegalStateException("Cannot launch binary " + binName);
-        }
-
     }
     
     private void _launch(File wdir, File infile) throws TerminationException, IOException, InterruptedException {
@@ -214,12 +206,13 @@ public abstract class GcalLauncher implements Serializable {
         this.setupProperties();
 
         if ( this.dryrun ) {
-            this.myLogger.info("In dry-run mode: will return without running " + this.appName);
+            this.myLogger.info("In dry-run mode: will return without running " + this.appSpec.getDefaultValue());
             return;
         }
         
         List<String> cmd = new ArrayList<String>(
-                Arrays.asList( this.bin.toString(), "--input", infile.toString() ) );
+                Arrays.asList( this.appSpec.getPath().toString(),
+                        "--input", infile.toString() ) );
 
         // If this application doesn't use --output, the implementing subclass is responsible
         // for setting this.outfileName if needed.
@@ -265,7 +258,7 @@ public abstract class GcalLauncher implements Serializable {
                 this.stdoutWriter == null ? new PrintWriter(System.out): this.stdoutWriter,
                 this.stderrWriter == null ? null : this.stderrWriter,
                 this.stdout, this.stderr, false, true);
-        this.myLogger.info(this.bin + " finished in " +
+        this.myLogger.info(this.appSpec.getPath().toString() + " finished in " +
                 (System.currentTimeMillis() - startTime)/1000.0 + "s");
         
         this.lastErrLine = launcher.getLastErrLine();
@@ -278,19 +271,8 @@ public abstract class GcalLauncher implements Serializable {
         
     }
     
-    protected boolean check_bin_ok() {
-        
-        return this.bin != null && this.bin.isFile() && this.bin.canExecute();
-        
-    }
- 
     protected void setupProperties() {
         
-        // Set binary from system property if specified
-        String binStr = this.properties.getProperty(this.propNamePrefix + GcalLauncher.BIN);
-        if ( binStr != null )
-            this.bin = new File(binStr);
-
         // Change dryrun from current setting if specified
         this.dryrun = propertyTrueFalse(this.propNamePrefix + GcalLauncher.DRYRUN, this.dryrun);
 
@@ -402,14 +384,14 @@ public abstract class GcalLauncher implements Serializable {
     }
  
     public String getAppName() {
-        return this.appName;
+        return this.appSpec.getDefaultValue();
     }
     
     public File newInputFile( File wdir ) throws IOException {
         if ( this.uniqueFilenames )
-            return File.createTempFile( this.appName + "_", ".in", wdir );
+            return File.createTempFile( this.appSpec.getDefaultValue() + "_", ".in", wdir );
         else
-            return new File(wdir, this.appName + ".in");
+            return new File(wdir, this.appSpec.getDefaultValue() + ".in");
     }
 
     /**

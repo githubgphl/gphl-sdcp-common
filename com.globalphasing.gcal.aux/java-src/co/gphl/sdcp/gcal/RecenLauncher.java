@@ -25,6 +25,8 @@ import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import co.gphl.common.properties.ApplicationSpec;
+
 /**
  * FIXME! Make this reusable, so that we don't have to create
  * a new instance for each run.
@@ -68,10 +70,10 @@ public class RecenLauncher extends GcalLauncher {
      * @param redirectErrorStream
      */
     public RecenLauncher(
-            String propNameNamespace, Properties properties,
+            String propNameNamespace, Properties properties, ApplicationSpec appSpec,
             Writer stdoutWriter, Writer stderrWriter, boolean outputToFile,
             boolean redirectErrorStream) {
-        super(RecenLauncher.logger, appName, propNameNamespace, properties, stdoutWriter,
+        super(RecenLauncher.logger, appSpec, propNameNamespace, properties, stdoutWriter,
                 stderrWriter, outputToFile, redirectErrorStream);
     }
 
@@ -209,14 +211,4 @@ public class RecenLauncher extends GcalLauncher {
         return false;
     }
  
-    /**
-     * External method to check that binary is usable.
-     * 
-     * @deprecated because we need to sort out a better way of doing this
-     */
-    @Deprecated @Override
-    public boolean check_bin_ok() {
-        return super.check_bin_ok();
-    }
-    
 }

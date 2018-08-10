@@ -19,6 +19,9 @@ import java.util.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import co.gphl.common.properties.PropertyDefinition;
+import co.gphl.emulator.common.EmulatorApplicationSpec;
+
 /**
  * @author pkeller
  *
@@ -59,8 +62,15 @@ public class SimcalLauncher extends GcalLauncher implements Serializable {
     
     public SimcalLauncher(String propNameNamespace, Properties properties,
             Writer stdoutWriter, Writer stderrWriter, boolean outputToFile, boolean redirectErrorStream) {
-        super(SimcalLauncher.logger, SimcalLauncher.appName, propNameNamespace, properties,
+        super(SimcalLauncher.logger, EmulatorApplicationSpec.SIMCALLBIN, propNameNamespace, properties,
                 stdoutWriter, stderrWriter, outputToFile, redirectErrorStream);
+        // FIXME! SDCP-226 OK, sort of, to do this here because simcal is only used
+        // in an emulation context (c.f. hard-coded spec param), but we should really
+        // have a kind of save/set or push/pop arrangement so we can restore the
+        // previous static state. We should be doing this automatically in
+        // super._pre/post_launch
+        PropertyDefinition.State.setProperties(properties);
+        
     }
     
     public void setHkli(File hkli) {
