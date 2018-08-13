@@ -284,6 +284,18 @@ public abstract class GcalLauncher implements Serializable {
         String propName, propVal, propArg, oldPropVal;
         Map<String, String> paramSet;
         
+        // Cater for global properties (i.e. not specific to a particular gcal application)
+        // Just BDG_home for now
+        // Set it first, so that it can be overridden by the application-specific
+        // setting (if any)
+        propArg = this.getPropNames().get(GcalLauncher.BDG_LICENCE_DIR);
+        propName = this.globalPropNamePrefix + GcalLauncher.BDG_LICENCE_DIR;
+        // Don't check this.properties.hasProperty(propName) because
+        // that doesn't check in the default property list
+        propVal = this.properties.getProperty(propName);
+        if ( propVal != null && !propVal.isEmpty() )
+            this.env.put( propArg, propVal );
+
         for ( Entry<String, String> e: this.getPropNames().entrySet() ) {
 
             propName = this.propNamePrefix + e.getKey();
@@ -313,18 +325,6 @@ public abstract class GcalLauncher implements Serializable {
                 else
                     paramSet.put(propArg, propVal);
             }
-        }
-        
-        // Cater for global properties (i.e. not specific to a particular gcal application)
-        // Just BDG_home for now
-        propArg = this.getPropNames().get(GcalLauncher.BDG_LICENCE_DIR);
-        if ( ! this.env.containsKey(propArg) ) {
-            propName = this.globalPropNamePrefix + GcalLauncher.BDG_LICENCE_DIR;
-            // Don't check this.properties.hasProperty(propName) because
-            // that doesn't check in the default property list
-            propVal = this.properties.getProperty(propName);
-            if ( propVal != null && !propVal.isEmpty() )
-                this.env.put( propArg, propVal );
         }
         
     }
