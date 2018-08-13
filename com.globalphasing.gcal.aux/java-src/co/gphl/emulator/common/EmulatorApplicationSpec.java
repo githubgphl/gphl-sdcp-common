@@ -28,7 +28,7 @@ public enum EmulatorApplicationSpec implements ApplicationSpec {
         String basename = this.name().toLowerCase();
         
         ApplicationSpec.State.register(this, EmulatorProperty.NAMESPACE, 
-                basename, basename, EmulatorProperty.BLBINDIR);
+                basename, basename, EmulatorProperty.BLBINDIR, EmulatorProperty.BDGHOME);
         
     }
 

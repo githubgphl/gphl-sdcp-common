@@ -24,6 +24,26 @@ import java.util.logging.Logger;
  */
 public interface ApplicationSpec extends PropertyDefinition {
 
+    
+    /**
+     * Suffix that is added to the property basename to form the name of
+     * the property that specifies either:
+     * 
+     * <ul><li>the directory containing applications' executable files, or:</li>
+     * <li>the actual executable for a particular application</li></ul>
+     */
+    public static String BINSUFFIX = "bin";
+    
+    
+    /**
+     * Suffix that is added to the property basename to form the name of
+     * the property that specifies either:
+     * 
+     * <ul><li>the directory containing the {@code .licence} file for GPhL applications, or:</li>
+     * <li>the directory containing a {@code .licence} file for a specific GPhL application</li></ul>
+     */
+    public static String BDGSUFFIX = "bdg_licence_dir";
+    
     @Override
     default int getMinArgs() {
         return 0;
@@ -71,6 +91,16 @@ public interface ApplicationSpec extends PropertyDefinition {
     }
     
     /**
+     * Returns licencing directory, if one has been set.
+     * 
+     * @return application-specific licencing directory if set, otherwise
+     * global licencing directory or {@code null} if none has been set.
+     */
+    default Path getLicencingDir() {
+        return State.getState(this).getLicencingDir();
+    }
+    
+    /**
      * Get the basename of the name of the property used to define the location or name
      * of the application executable file. This is used as a "logical" application name,
      * and is incorporated into the names of various directories and files that are
@@ -87,14 +117,16 @@ public interface ApplicationSpec extends PropertyDefinition {
         private static Logger logger = Logger.getLogger(State.class.getCanonicalName());
         
         
-        private final PropertyDefinition dirProperty;
+        private final PropertyDefinition binDirProperty;
+        private final PropertyDefinition defaultLicDirProperty;
         private final String basename;
         
         private Boolean valid = null;
         private Path path = null;
+        private Path licPath = null;
 
         public static void register(ApplicationSpec spec, String namespace, String basename,
-                String defaultValue, PropertyDefinition dirProperty) {
+                String defaultValue, PropertyDefinition binDirProperty, PropertyDefinition licDirProperty) {
             
             // We may reconsider this in the future if an application is allowed to be
             // disabled by default.
@@ -103,14 +135,15 @@ public interface ApplicationSpec extends PropertyDefinition {
                         " is null or an empty string. This is not allowed");
             
             PropertyDefinition.State.register(spec, new State(spec, namespace, 
-                    basename, defaultValue, dirProperty));
+                    basename, defaultValue, binDirProperty, licDirProperty));
             
         }
         
-        private State(ApplicationSpec spec, String namespace, String basename, String defaultValue, PropertyDefinition dirProperty) {
+        private State(ApplicationSpec spec, String namespace, String basename, String defaultValue,
+                PropertyDefinition binDirProperty, PropertyDefinition licDirProperty) {
             
             // We don't need to set the description in the state here.
-            super(spec, namespace, basename + ".bin", 
+            super(spec, namespace, basename + "." + BINSUFFIX, 
                     Objects.requireNonNull(defaultValue, "BUG: A WorkflowApplicationSpec must have a default value set"),
                     0, 1, "");
             
@@ -119,9 +152,11 @@ public interface ApplicationSpec extends PropertyDefinition {
             if ( this.defaultValue.isEmpty() )
                 throw new IllegalArgumentException("BUG: A WorkflowApplicationSpec cannot have an empty default value");
             
-            this.dirProperty =
-                    Objects.requireNonNull(dirProperty, "BUG: A property for the parent directory of an application spec must be specified");
+            this.binDirProperty =
+                    Objects.requireNonNull(binDirProperty, "BUG: A property for the parent directory of an application spec must be specified");
 
+            this.defaultLicDirProperty = licDirProperty;
+            
         };
 
         protected static State getState(ApplicationSpec key) {
@@ -130,14 +165,23 @@ public interface ApplicationSpec extends PropertyDefinition {
             return (State) PropertyDefinition.State.getState(key);
         }
         
+        private Path getLicencingDir() {
+
+            // Side-effect here: not brilliant, but this facility is really
+            // intended for development use, not deployment/production.
+            this.getPath();
+            
+            return this.licPath;
+        }
+        
         private Path getPath() {
             
             if ( ! this.isValid() ) {
-                logger.severe(String.format("The path '%s' specified for property %s has failed validation. "
-                        + "Cannot use application.\n"
-                        + "See previous error message(s) from this logger", this.path, this.propName) );
+                logger.severe(String.format("Property %s has failed validation: "
+                        + "cannot use application.\n"
+                        + "See previous error message(s) from this logger", this.propName) );
                 logger.info("Please consider calling isValid() sooner!"); 
-                throw new RuntimeException("Invalid path specified for application " + this.defaultValue);
+                throw new RuntimeException("Invalid specification for application " + this.basename);
             }
             
             return this.path;
@@ -173,7 +217,7 @@ public interface ApplicationSpec extends PropertyDefinition {
             this.path = Paths.get(value);
 
             if ( !this.path.isAbsolute() ) {
-                String dirStr = this.dirProperty.getPropValue();
+                String dirStr = this.binDirProperty.getPropValue();
                 Path dir = null;
                 if ( dirStr != null && !dirStr.isEmpty() )
                     dir = Paths.get(dirStr);
@@ -181,7 +225,7 @@ public interface ApplicationSpec extends PropertyDefinition {
                 if ( dir == null || !dir.isAbsolute() ) {
                     logger.severe( String.format("Neither property %s nor property %s are set to an absolute path: "
                             + "application %s is not available",
-                            this.propName, this.dirProperty.getPropName(), this.defaultValue));
+                            this.propName, this.binDirProperty.getPropName(), this.defaultValue));
                     logger.info( String.format("The values set are '%s' and '%s' respectively",
                             value == null ? "<null>" : value,
                                     dirStr == null ? "<null>" : dirStr ) );
@@ -201,6 +245,35 @@ public interface ApplicationSpec extends PropertyDefinition {
                             + "cannot continue",
                             this.path, this.defaultValue));
             }
+            
+            // Finally, check that the licencing directory, if applicable, is valid
+            if ( this.valid ) {
+                String licPropName = this.property.getPropName().replaceFirst(BINSUFFIX + "$", BDGSUFFIX);
+                String licPropValue = PropertyDefinition.State.queryProperties(licPropName);
+                
+                if ( licPropValue != null && !licPropValue.isEmpty() )
+                    this.licPath = Paths.get(licPropValue);
+                else if ( this.defaultLicDirProperty != null ) {
+                    this.licPath = Paths.get(this.defaultLicDirProperty.getPropValue());
+                    licPropName = this.defaultLicDirProperty.getPropName();
+                }
+                
+                if ( this.licPath != null ) {
+                    Path licFilePath = licPath.resolve(".licence");
+                    this.valid = this.licPath.isAbsolute() && Files.isDirectory(this.licPath) && 
+                            Files.isReadable(this.licPath) && Files.isRegularFile(licFilePath) &&
+                            Files.isReadable(licFilePath);
+                    
+                    if ( ! this.valid )
+                        logger.severe( String.format("Validation of licencing directory '%s' specified by "
+                                + "property %s failed:\n"
+                                + "it must specify an absolute path to a readable directory that contains "
+                                + "a readable file called '.licence'", 
+                                this.licPath.toString(), licPropName) );
+                }
+                
+            }
+            
         }
     }
 }

@@ -194,6 +194,20 @@ public interface PropertyDefinition {
             return State.map.get(key);
         }
         
+        
+        /**
+         * Query statically-set properties with an arbitrary property name.
+         * 
+         * @param key property name
+         * @return property value
+         * 
+         * @deprecated This is not a good approach: we need to find a better way.
+         * 
+         */
+        @Deprecated protected static String queryProperties(String key) {
+            return State.properties == null ? System.getProperty(key) : State.properties.getProperty(key);
+        }
+        
     }
     
 }

@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.io.Writer;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -95,13 +96,6 @@ public abstract class GcalLauncher implements Serializable {
     public static final String DRYRUN = "dry_run";
     
     /**
-     * Name of property used to specify the directory containing the {@code .licence}
-     * file. Only needed where the executable is a "bombed" one, i.e. needs a
-     * GPhL licence file to run.
-     */
-    public static final String BDG_LICENCE_DIR = "bdg_licence_dir";
-    
-    /**
      * Name of property used to control whether or not to use {@link File#createTempFile(String, String)}
      * to generate unique names for the input and output files for this launch.
      */
@@ -117,7 +111,6 @@ public abstract class GcalLauncher implements Serializable {
             propNames.put(GcalLauncher.OMPSTACKSIZE, "OMP_STACKSIZE");
             propNames.put(GcalLauncher.OMPTHREADLIMIT, "OMP_THREAD_LIMIT");
             propNames.put(GcalLauncher.OMPNUMTHREADS, "OMP_NUM_THREADS");
-            propNames.put(GcalLauncher.BDG_LICENCE_DIR, "BDG_home");
         }
 
         return Collections.unmodifiableMap(GcalLauncher.propNames);
@@ -284,18 +277,6 @@ public abstract class GcalLauncher implements Serializable {
         String propName, propVal, propArg, oldPropVal;
         Map<String, String> paramSet;
         
-        // Cater for global properties (i.e. not specific to a particular gcal application)
-        // Just BDG_home for now
-        // Set it first, so that it can be overridden by the application-specific
-        // setting (if any)
-        propArg = this.getPropNames().get(GcalLauncher.BDG_LICENCE_DIR);
-        propName = this.globalPropNamePrefix + GcalLauncher.BDG_LICENCE_DIR;
-        // Don't check this.properties.hasProperty(propName) because
-        // that doesn't check in the default property list
-        propVal = this.properties.getProperty(propName);
-        if ( propVal != null && !propVal.isEmpty() )
-            this.env.put( propArg, propVal );
-
         for ( Entry<String, String> e: this.getPropNames().entrySet() ) {
 
             propName = this.propNamePrefix + e.getKey();
@@ -326,6 +307,11 @@ public abstract class GcalLauncher implements Serializable {
                     paramSet.put(propArg, propVal);
             }
         }
+        
+        // Set up licencing directory, if one has been specified
+        Path licencingDir = this.appSpec.getLicencingDir();
+        if ( licencingDir != null )
+            this.env.put("BDG_home", licencingDir.toString());
         
     }
 

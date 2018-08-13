@@ -12,6 +12,7 @@
  */
 package co.gphl.emulator.common;
 
+import co.gphl.common.properties.ApplicationSpec;
 import co.gphl.common.properties.PropertyDefinition;
 
 /**
@@ -19,11 +20,13 @@ import co.gphl.common.properties.PropertyDefinition;
  *
  */
 public enum EmulatorProperty implements PropertyDefinition {
-    BLBINDIR("bin", null, 1, "Absolute path to directory containing emulator-side applications");
+    
+    BDGHOME(ApplicationSpec.BDGSUFFIX, 1, null, "Directory containing GPhL '.licence' file"),
+    BLBINDIR(ApplicationSpec.BINSUFFIX, 1, null, "Absolute path to directory containing emulator-side applications");
 
     public static final String NAMESPACE = "co.gphl.beamline";
 
-    EmulatorProperty(String name, String defaultValue, int nArgs, String description) {
+    EmulatorProperty(String name, int nArgs, String defaultValue, String description) {
         PropertyDefinition.State.register(this, EmulatorProperty.NAMESPACE, name, defaultValue, nArgs, description);
     }
     
