@@ -86,11 +86,6 @@ public abstract class GcalLauncher implements Serializable {
     public static final String OMPNUMTHREADS = "ompnumthreads";
     
     /**
-     * Name of property used to specify path to executable
-     */
-    public static final String BIN = "bin";
-    
-    /**
      * Name of property used to specify whether or not to actually run executable
      */
     public static final String DRYRUN = "dry_run";
