@@ -19,6 +19,18 @@ import java.util.Objects;
 import java.util.logging.Logger;
 
 /**
+ * Interface that encapsulates the specification of an application by defining a property.
+ * To be valid, the value that is assigned to the property must be convertible to a
+ * {@link Path} that:
+ * 
+ * <ul><li>exists on the filesystem</li>
+ * <li>is {@link Path#isAbsolute() absolute}  </li>
+ * <li>is {@link Files#isExecutable(Path) executable} </li></ul>
+ * 
+ * Note that the value is considered valid if the application is
+ * not {@link #isEnabled() enabled}: this is to make early checks
+ * that use {@link #isValid()} useful.
+ * 
  * @author pkeller
  *
  */
@@ -55,26 +67,6 @@ public interface ApplicationSpec extends PropertyDefinition {
     }
  
     /**
-     * Tests for validity of the path to the application. To be
-     * valid, if the application is {@link #isEnabled() enabled}
-     * the path must:
-     * 
-     * <ul><li>exist on the filesystem</li>
-     * <li>be absolute</li>
-     * <li>be executable</li></ul>
-     * 
-     * Note that this method will return true if the application is
-     * not enabled: it is intended to be used in early checks on the
-     * property assignments, and from that point of view an optional
-     * application that has been disabled is always valid.
-     * 
-     * @return {@code true} if the specification of the application is valid.
-     */
-    default boolean isValid() {
-        return State.getState(this).isValid();
-    }
-    
-    /**
      * Tests whether an optional application has been enabled for use.
      * By default, applications are enabled (because they have a default
      * value that is not allowed to be an empty string).
@@ -83,7 +75,12 @@ public interface ApplicationSpec extends PropertyDefinition {
      * {@code true} otherwise. 
      */
     default boolean isEnabled() {
-        return !this.getPropValue().isEmpty();
+        return  !State.getState(this).getUnvalidatedPropValue().isEmpty();
+    }
+    
+    @Override
+    default String getPropValue() {
+        throw new UnsupportedOperationException("BUG: you should have used getPath() here!");
     }
     
     default Path getPath() {
@@ -145,7 +142,7 @@ public interface ApplicationSpec extends PropertyDefinition {
             // We don't need to set the description in the state here.
             super(spec, namespace, basename + "." + BINSUFFIX, 
                     Objects.requireNonNull(defaultValue, "BUG: A WorkflowApplicationSpec must have a default value set"),
-                    0, 1, "");
+                    0, 1, "", null);
             
             this.basename = basename;
             
@@ -187,7 +184,8 @@ public interface ApplicationSpec extends PropertyDefinition {
             return this.path;
         }
         
-        private boolean isValid() {
+        @Override
+        protected boolean isValid() {
             if ( this.valid == null )
                 this.setup();
             
@@ -200,9 +198,7 @@ public interface ApplicationSpec extends PropertyDefinition {
         
         private void setup() {
 
-            // We set this.path from the start, so that if we get here from getPath() we can 
-            // report as much of the path as was set up if validation fails.
-            String value = this.property.getPropValue();
+            String value = this.getUnvalidatedPropValue();
             
             // If the property has been defined with no argument (something like
             // -Dname) this implies that we are trying to unset/disable the use
@@ -214,6 +210,9 @@ public interface ApplicationSpec extends PropertyDefinition {
                 return;
             }
             
+            // We set this.path from the start, so that if we get here from getPath() we can 
+            // report as much of the path as was set up if validation fails.
+            // Cast to supertype to avoid UnsupportedOperationException above
             this.path = Paths.get(value);
 
             if ( !this.path.isAbsolute() ) {

@@ -8,6 +8,6 @@ Export-Package: co.gphl.emulator.common,
  co.gphl.sdcp.F90NamelistGroup.v2.impl,
  co.gphl.sdcp.gcal
 Require-Bundle: com.globalphasing.sdcp.common;bundle-version="1.0.0";visibility:=reexport
-Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-Vendor: GLOBALPHASING
 Import-Package: org.slf4j;version="[1.7.2,2.0.0)"

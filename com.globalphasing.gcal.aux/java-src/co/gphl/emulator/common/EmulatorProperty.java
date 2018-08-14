@@ -27,7 +27,7 @@ public enum EmulatorProperty implements PropertyDefinition {
     public static final String NAMESPACE = "co.gphl.beamline";
 
     EmulatorProperty(String name, int nArgs, String defaultValue, String description) {
-        PropertyDefinition.State.register(this, EmulatorProperty.NAMESPACE, name, defaultValue, nArgs, description);
+        PropertyDefinition.State.register(this, EmulatorProperty.NAMESPACE, name, defaultValue, nArgs, description, null);
     }
     
 }

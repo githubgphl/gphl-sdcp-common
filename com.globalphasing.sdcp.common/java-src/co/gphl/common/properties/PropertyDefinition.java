@@ -13,10 +13,14 @@ package co.gphl.common.properties;
  */
 
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.function.Function;
+import java.util.logging.Logger;
 
 /**
  * Interface that encapsulates the definition and value of a Java property.
@@ -47,18 +51,18 @@ public interface PropertyDefinition {
         return State.getState(this).description;
     }
     
-    
+    default boolean isValid() {
+        return State.getState(this).isValid();
+    }
+
     /**
      * Returns the value that has been assigned to this property. If no value has been set
      * then the default value, if any, is returned.
      * 
-     * @return value assigned to the property
+     * @return value assigned to the property (without leading/trailing whitespace)
      */
     default String getPropValue() {
-        String val = State.properties == null ?  
-                System.getProperty(getPropName(), getDefaultValue()) :
-                    State.properties.getProperty(getPropName(), getDefaultValue());
-        return val == null ? null : val.trim();
+        return State.getState(this).getPropValue();
     }
     
     /**
@@ -94,6 +98,14 @@ public interface PropertyDefinition {
         return retval;
     }
     
+    default Double getPropDoubleValue() {
+        String val = this.getPropValue();
+        if ( val != null && !val.isEmpty() )
+            return Double.parseDouble(val);
+        else
+            return null;
+    }
+    
     default boolean validateArgs() {
         
         String val = Objects.requireNonNull(this.getPropValue(),
@@ -106,6 +118,8 @@ public interface PropertyDefinition {
     
     static class State {
         
+        private static Logger logger = Logger.getLogger(State.class.getCanonicalName());
+        
         private static final Map<PropertyDefinition, State> map = new HashMap<>();
 
         private static Properties properties = null;
@@ -116,6 +130,15 @@ public interface PropertyDefinition {
         protected final int minArgs, maxArgs;
         protected final PropertyDefinition property;
 
+        /* Validator function for the assigned value of the property.
+         * If specified, the validation attempts to call validator.apply on the
+         * value. The validation passes if no exception is thrown.
+         * 
+         * It would be better if it returned true/false rather than throwing
+         * an exception: maybe in a future version.
+         */
+        private final Function<String, ?> validator;
+        private Boolean valid = null;
         
         /**
          * Specify the properties which will be used by future calls to
@@ -130,19 +153,19 @@ public interface PropertyDefinition {
 
         public static void register(PropertyDefinition property, String namespace,
                 String propName, String defaultValue, int nArgs,
-                String description) {
+                String description, Function<String, ?> validator) {
             
             register(property, namespace, propName, defaultValue,
-                    nArgs, nArgs, description);
+                    nArgs, nArgs, description, validator);
             
         }
         
         public static void register(PropertyDefinition property, String namespace,
                 String propName, String defaultValue, int minArgs, int maxArgs,
-                String description) {
+                String description, Function<String, ?> validator) {
         
             register(property, new State(property, namespace, propName,
-                    defaultValue, minArgs, maxArgs, description ) );
+                    defaultValue, minArgs, maxArgs, description, validator ) );
         }
         
         protected static void register(PropertyDefinition property, 
@@ -162,7 +185,7 @@ public interface PropertyDefinition {
          */
         protected State ( PropertyDefinition property, String namespace,
                 String propName, String defaultValue, int minArgs, int maxArgs,
-                String description ) {
+                String description, Function<String, ?> validator ) {
             
             String myNs = Objects.requireNonNull(namespace, "BUG: Property namespace cannot be null");
             if ( myNs.isEmpty() )
@@ -187,7 +210,7 @@ public interface PropertyDefinition {
             this.maxArgs = maxArgs;
             this.description = description;
             this.property = property;
-            
+            this.validator = validator;
         }
         
         protected static State getState(PropertyDefinition key) {
@@ -208,6 +231,55 @@ public interface PropertyDefinition {
             return State.properties == null ? System.getProperty(key) : State.properties.getProperty(key);
         }
         
+        protected String getUnvalidatedPropValue() {
+            String val =  State.properties == null ?
+                    System.getProperty(this.propName, this.defaultValue) :
+                        State.properties.getProperty(this.propName, this.defaultValue);
+            return val == null ? null : val.trim();
+        }
+        
+        private String getPropValue() {
+            
+            if ( ! this.isValid() ) {
+                logger.severe(String.format("Property %s has failed validation\n" +
+                        "See previous error message(s) from this logger", this.propName));
+                logger.info("Please consider calling isValid() sooner!");
+                throw new RuntimeException("Invalid value for property " + this.propName);
+            }
+            
+            return this.getUnvalidatedPropValue();
+        }
+        
+        protected boolean isValid() {
+            if ( this.valid == null )  {
+                this.valid = true;
+                
+                if ( this.validator != null ) {
+                    String val = this.getUnvalidatedPropValue();
+                    if ( val != null && !val.isEmpty() )
+
+                        try {
+                            this.validator.apply(val);
+                        }
+                        catch (Throwable t) {
+                            this.valid = false;
+                            logger.severe(String.format("Value '%s' assigned to property %s has "
+                                + "failed validation", val, this.propName) );
+                            
+                            logger.severe(t.toString());
+                            StringWriter sw = new StringWriter();
+                            PrintWriter pw = new PrintWriter(sw);
+                            t.printStackTrace(pw);
+                            logger.severe(sw.toString());
+                            
+                        }
+                }
+            }
+
+            return this.valid;
+        }
+
+
     }
     
 }
