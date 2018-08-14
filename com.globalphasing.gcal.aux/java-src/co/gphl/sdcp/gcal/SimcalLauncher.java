@@ -9,7 +9,6 @@
 package co.gphl.sdcp.gcal;
 
 import java.io.File;
-import java.io.Serializable;
 import java.io.Writer;
 import java.util.Collections;
 import java.util.HashMap;
@@ -26,7 +25,7 @@ import co.gphl.emulator.common.EmulatorApplicationSpec;
  * @author pkeller
  *
  */
-public class SimcalLauncher extends GcalLauncher implements Serializable {
+public class SimcalLauncher extends GcalLauncher {
 
     static private Logger logger =
             LoggerFactory.getLogger(SimcalLauncher.class);

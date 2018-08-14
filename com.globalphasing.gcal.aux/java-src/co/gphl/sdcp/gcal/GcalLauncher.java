@@ -11,7 +11,6 @@ package co.gphl.sdcp.gcal;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.Serializable;
 import java.io.Writer;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -35,7 +34,7 @@ import co.gphl.common.threads.TerminationException;
  * @author pkeller
  *
  */
-public abstract class GcalLauncher implements Serializable {
+public abstract class GcalLauncher {
 
     private static Logger logger = LoggerFactory.getLogger(GcalLauncher.class);
     
@@ -112,17 +111,6 @@ public abstract class GcalLauncher implements Serializable {
 
     }
     
-    
-    // Needed to allow subclasses to be made serialisable
-    protected GcalLauncher() {
-        // Need to assign to final fields in every constructor to keep the compiler happy.
-        // The JVM uses some reflective black magic in defaultReadObject to restore their
-        // state
-        this.globalPropNamePrefix = "";
-        this.propNamePrefix = "";
-        this.appSpec = null;
-        this.properties = new Properties();
-    };
     
     private void readObject( java.io.ObjectInputStream in )
             throws ClassNotFoundException, IOException {
