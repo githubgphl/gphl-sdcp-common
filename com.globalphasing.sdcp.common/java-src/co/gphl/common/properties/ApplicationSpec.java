@@ -111,7 +111,7 @@ public interface ApplicationSpec extends PropertyDefinition {
     
     static class State extends PropertyDefinition.State {
         
-        private static Logger logger = Logger.getLogger(State.class.getCanonicalName());
+        private static Logger logger = Logger.getLogger(State.class.getEnclosingClass().getName());
         
         
         private final PropertyDefinition binDirProperty;
@@ -226,8 +226,7 @@ public interface ApplicationSpec extends PropertyDefinition {
                             + "application %s is not available",
                             this.propName, this.binDirProperty.getPropName(), this.defaultValue));
                     logger.info( String.format("The values set are '%s' and '%s' respectively",
-                            value == null ? "<null>" : value,
-                                    dirStr == null ? "<null>" : dirStr ) );
+                            Objects.toString(value, "<null>"), Objects.toString(dirStr, "<null>") ) );
                     this.valid = false;
                 }
                 
@@ -240,9 +239,8 @@ public interface ApplicationSpec extends PropertyDefinition {
             if ( this.valid == null ) {
                 this.valid = Files.isExecutable(this.path);
                 if ( ! this.valid )
-                    logger.severe( String.format("Required application %s defined by property %s is not executable: "
-                            + "cannot continue",
-                            this.path, this.defaultValue));
+                    logger.severe( String.format("File %s defined by property %s is not executable",
+                            this.path, this.propName));
             }
             
             // Finally, check that the licencing directory, if applicable, is valid

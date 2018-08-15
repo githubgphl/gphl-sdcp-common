@@ -13,13 +13,12 @@ package co.gphl.common.properties;
  */
 
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.function.Function;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -118,7 +117,16 @@ public interface PropertyDefinition {
     
     static class State {
         
-        private static Logger logger = Logger.getLogger(State.class.getCanonicalName());
+        static {
+            // We could do something more sophisticated by subclassing SimpleFormatter
+            // (e.g. by including the thread name and compressing the qualified classname
+            // like logback does) but this should be OK for now.
+            if ( System.getProperty("java.util.logging.SimpleFormatter.format") == null  )
+                System.setProperty("java.util.logging.SimpleFormatter.format",
+                        "%1$tH:%<tM:%<tS:%<tL %4$s %3$s %5$s%6$s%n");
+            }
+        
+        private static Logger logger = Logger.getLogger(State.class.getEnclosingClass().getName());
         
         private static final Map<PropertyDefinition, State> map = new HashMap<>();
 
@@ -263,15 +271,11 @@ public interface PropertyDefinition {
                         }
                         catch (Throwable t) {
                             this.valid = false;
-                            logger.severe(String.format("Value '%s' assigned to property %s has "
-                                + "failed validation", val, this.propName) );
                             
-                            logger.severe(t.toString());
-                            StringWriter sw = new StringWriter();
-                            PrintWriter pw = new PrintWriter(sw);
-                            t.printStackTrace(pw);
-                            logger.severe(sw.toString());
-                            
+                            logger.logp(Level.SEVERE, this.getClass().getName(), "isValid",
+                                    String.format("Value '%s' assigned to property %s has "
+                                            + "failed validation", val, this.propName),
+                                    t);
                         }
                 }
             }
