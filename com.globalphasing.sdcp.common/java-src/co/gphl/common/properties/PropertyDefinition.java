@@ -13,6 +13,12 @@ package co.gphl.common.properties;
  */
 
 
+import java.nio.file.AccessDeniedException;
+import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
+import java.nio.file.NotDirectoryException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -88,17 +94,8 @@ public interface PropertyDefinition {
      * to a boolean according to the above rules.
      */
     default boolean getPropBoolValue() {
-        String val = this.getPropValue();
-        boolean retval = false;
-        if ( val != null ) {
-            if ( val.isEmpty() || "YyTt".indexOf(val.charAt(0)) > -1 )
-                retval = true;
-            else if ( "NnFf".indexOf(val.charAt(0) ) < 0 )
-                throw new UnsupportedOperationException("Conversion of String value '"
-                        + val + "' to boolean not supported");
-        }
-        return retval;
-    }
+        return asBoolean(this.getPropValue());
+   }
     
     default Double getPropDoubleValue() {
         String val = this.getPropValue();
@@ -116,6 +113,37 @@ public interface PropertyDefinition {
         String[] args = val.split("\\s+");
         
         return args.length >= this.getMinArgs() && args.length <= this.getMaxArgs();
+    }
+    
+    static boolean asBoolean(String val) {
+
+        boolean retval = false;
+        if ( val != null ) {
+            if ( val.isEmpty() || "YyTt".indexOf(val.charAt(0)) > -1 )
+                retval = true;
+            else if ( "NnFf".indexOf(val.charAt(0) ) < 0 )
+                throw new UnsupportedOperationException("Conversion of String value '"
+                        + val + "' to boolean not supported");
+        }
+        return retval;
+    }
+
+    static boolean checkDir(String val) {
+        Path path = Paths.get(val);
+
+        try {
+            if ( !Files.exists(path) )
+                throw new NoSuchFileException(val);
+            if ( !Files.isDirectory(path) )
+                throw new NotDirectoryException(val);
+            if ( !Files.isReadable(path) )
+                throw new AccessDeniedException(val);
+        }
+        catch (Throwable t) {
+            throw new RuntimeException(t);
+        }
+        
+        return true;
     }
     
     static class State {

@@ -221,6 +221,12 @@ public interface ApplicationSpec extends PropertyDefinition {
             this.path = Paths.get(value);
 
             if ( !this.path.isAbsolute() ) {
+                if ( ! this.binDirProperty.isValid(true) ) {
+                    logger.severe(String.format("Directory property %s required here but invalid: property %s is also invalid",
+                            this.binDirProperty.getPropName(), this.propName) );
+                    this.valid = false;
+                    return;
+                }
                 String dirStr = this.binDirProperty.getPropValue();
                 Path dir = null;
                 if ( dirStr != null && !dirStr.isEmpty() )
