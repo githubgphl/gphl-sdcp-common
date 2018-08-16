@@ -262,8 +262,11 @@ public interface ApplicationSpec extends PropertyDefinition {
                 if ( licPropValue != null && !licPropValue.isEmpty() )
                     this.licPath = Paths.get(licPropValue);
                 else if ( this.defaultLicDirProperty != null ) {
-                    this.licPath = Paths.get(this.defaultLicDirProperty.getPropValue());
-                    licPropName = this.defaultLicDirProperty.getPropName();
+                    String licPathStr = Objects.toString(this.defaultLicDirProperty.getPropValue(), "");
+                    if ( !licPathStr.isEmpty() ) {
+                        this.licPath = Paths.get(licPathStr);
+                        licPropName = this.defaultLicDirProperty.getPropName();
+                    }
                 }
                 
                 if ( this.licPath != null ) {
