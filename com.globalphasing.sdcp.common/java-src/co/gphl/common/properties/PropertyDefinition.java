@@ -13,7 +13,10 @@ package co.gphl.common.properties;
  */
 
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
@@ -50,8 +53,8 @@ public interface PropertyDefinition {
         return State.getState(this).description;
     }
     
-    default boolean isValid() {
-        return State.getState(this).isValid();
+    default boolean isValid(boolean required) {
+        return State.getState(this).isValid(required);
     }
 
     /**
@@ -248,7 +251,7 @@ public interface PropertyDefinition {
         
         private String getPropValue() {
             
-            if ( ! this.isValid() ) {
+            if ( ! this.isValid(false) ) {
                 logger.severe(String.format("Property %s has failed validation\n" +
                         "See previous error message(s) from this logger", this.propName));
                 logger.info("Please consider calling isValid() sooner!");
@@ -258,23 +261,42 @@ public interface PropertyDefinition {
             return this.getUnvalidatedPropValue();
         }
         
-        protected boolean isValid() {
+        protected boolean isValid(boolean required) {
             if ( this.valid == null )  {
                 this.valid = true;
                 
+                String val = this.getUnvalidatedPropValue();
+                List<String> args = val == null || val.isEmpty() ? Collections.emptyList() : Arrays.asList(val.split("\\s+"));
+                int nArgs = args.size();
+                
+                if ( required ) {
+                    if ( this.maxArgs == 0 )
+                        throw new RuntimeException("BUG: called isValid(true) for " + this.propName + 
+                                " which has maxArgs==0. This makes no sense!");
+                    else if ( val == null )
+                        logger.severe(String.format("Property %s has not been assigned, but it "
+                                + "is a required property for this application", this.propName));
+                }
+                
+                // For a required property, the number of arguments must always be within the specified range
+                // For an optional property, the number of arguments must be within the range if any have been assigned
+                if ( (required || val != null) && (nArgs < this.minArgs || nArgs > this.maxArgs) )
+                    logger.severe(String.format("Property %s has %d arguments: should have a minimum of "
+                            + "%d and a maximum of %d", this.propName, nArgs, this.minArgs, this.maxArgs));
+                
                 if ( this.validator != null ) {
-                    String val = this.getUnvalidatedPropValue();
-                    if ( val != null && !val.isEmpty() )
 
+                    for ( String arg: args )
+                    
                         try {
-                            this.validator.apply(val);
+                            this.validator.apply(arg);
                         }
                         catch (Throwable t) {
                             this.valid = false;
                             
                             logger.logp(Level.SEVERE, this.getClass().getName(), "isValid",
                                     String.format("Value '%s' assigned to property %s has "
-                                            + "failed validation", val, this.propName),
+                                            + "failed validation", arg, this.propName),
                                     t);
                         }
                 }

@@ -29,7 +29,7 @@ import java.util.logging.Logger;
  * 
  * Note that the value is considered valid if the application is
  * not {@link #isEnabled() enabled}: this is to make early checks
- * that use {@link #isValid()} useful.
+ * that use {@link #isValid(boolean)} useful.
  * 
  * @author pkeller
  *
@@ -173,7 +173,7 @@ public interface ApplicationSpec extends PropertyDefinition {
         
         private Path getPath() {
             
-            if ( ! this.isValid() ) {
+            if ( ! this.isValid(false) ) {
                 logger.severe(String.format("Property %s has failed validation: "
                         + "cannot use application.\n"
                         + "See previous error message(s) from this logger", this.propName) );
@@ -185,9 +185,9 @@ public interface ApplicationSpec extends PropertyDefinition {
         }
         
         @Override
-        protected boolean isValid() {
+        protected boolean isValid(boolean required) {
             if ( this.valid == null )
-                this.setup();
+                this.setup(required);
             
             if ( this.valid == null )
                 throw new IllegalStateException("BUG: setup() has been called, but this.valid is still null");
@@ -196,17 +196,22 @@ public interface ApplicationSpec extends PropertyDefinition {
         }
 
         
-        private void setup() {
+        private void setup(boolean required) {
 
             String value = this.getUnvalidatedPropValue();
             
             // If the property has been defined with no argument (something like
             // -Dname) this implies that we are trying to unset/disable the use
             // of the application by assigning an empty string.
-            // value should never be null at this point, because the default value
-            // of an ApplicationSpec is always a non-empty string.
-            if ( value.isEmpty() ) {
-                this.valid = true;
+            if ( value == null || value.isEmpty() ) {
+                if ( required ) {
+                    this.valid = false;
+                    logger.severe(String.format("Application %s has been disabled, but it is required in this context. "
+                            + "Check the setting of property %s",
+                            this.basename, this.propName));
+                }
+                else
+                    this.valid = true;
                 return;
             }
             
