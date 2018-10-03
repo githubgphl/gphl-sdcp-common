@@ -19,11 +19,16 @@ import co.gphl.common.io.streams.StreamPrinter;
  * @author pkeller
  *
  */
-public class ProcessLauncher {
+public class ProcessLauncher implements Runnable {
 
     private ProcessBuilder processBuilder;
     private String lastOutLine, lastErrLine;
 
+    private Writer stdout, stderr;
+    private File stdoutFile, stderrFile;
+    private boolean append, captureLastLine;
+    private Integer status = null;
+    
     /**
      * Creates a launcher ready to run a process specified by {@code processBuilder}.
      * 
@@ -62,35 +67,15 @@ public class ProcessLauncher {
             boolean append, boolean captureLastLine)
             throws TerminationException, IOException, InterruptedException {
 
-        this.processBuilder.redirectErrorStream( stderr == null && stderrFile == null );
-        String cmd = this.commandLine(80, "\\\n");
-        Process process = this.processBuilder.start();
-
-        StreamPrinter outPrinter = new StreamPrinter(process.getInputStream(), stdout, stdoutFile,
-                append, cmd, 0, 0, captureLastLine);
-        outPrinter.start();
-
-        StreamPrinter errPrinter = null;
-        if ( ! this.processBuilder.redirectErrorStream() ) {
-            errPrinter = new StreamPrinter(process.getErrorStream(), stderr, stderrFile,
-                    append, null, 0, 0, captureLastLine);
-            errPrinter.start();
-        }
-
-        int status = process.waitFor();
-
-        // Make sure that we don't race ahead of the output
-        outPrinter.join();
-        if ( errPrinter != null )
-            errPrinter.join();
-
-        this.lastOutLine = captureLastLine ? outPrinter.getLastLine() : null;
-        this.lastErrLine = errPrinter == null || captureLastLine ? this.lastOutLine : errPrinter.getLastLine();
-
-        if (status != 0)
-            throw new TerminationException("Command exited with status " + status
-                    + ":\n" + this.commandLine(80, "\n") );
-
+        this.stdout = stdout;
+        this.stderr = stderr;
+        this.stdoutFile = stdoutFile;
+        this.stderrFile = stderrFile;
+        this.append = append;
+        this.captureLastLine = captureLastLine;
+        
+        this.run();
+        
     }
 
     /**
@@ -146,4 +131,48 @@ public class ProcessLauncher {
 
     }
 
+    public void run() {
+        
+        this.processBuilder.redirectErrorStream( stderr == null && stderrFile == null );
+        String cmd = this.commandLine(80, "\\\n");
+        Process process;
+        try {
+            process = this.processBuilder.start();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        StreamPrinter outPrinter = new StreamPrinter(process.getInputStream(), stdout, stdoutFile,
+                append, cmd, 0, 0, captureLastLine);
+        outPrinter.start();
+
+        StreamPrinter errPrinter = null;
+        if ( ! this.processBuilder.redirectErrorStream() ) {
+            errPrinter = new StreamPrinter(process.getErrorStream(), stderr, stderrFile,
+                    append, null, 0, 0, captureLastLine);
+            errPrinter.start();
+        }
+
+        try {
+            this.status = process.waitFor();
+
+            // Make sure that we don't race ahead of the output
+            outPrinter.join();
+            if ( errPrinter != null )
+                errPrinter.join();
+        }
+        catch ( InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        
+        this.lastOutLine = captureLastLine ? outPrinter.getLastLine() : null;
+        this.lastErrLine = errPrinter == null || captureLastLine ? this.lastOutLine : errPrinter.getLastLine();
+
+        if (this.status != 0)
+            throw new RuntimeException(new TerminationException("Command exited with status " + status
+                    + ":\n" + this.commandLine(80, "\n") ));
+
+
+    }
+    
 }
