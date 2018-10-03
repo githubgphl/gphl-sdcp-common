@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2010, 2017 Global Phasing Ltd.
+ * Copyright (c) 2010, 2018 Global Phasing Ltd.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -26,7 +26,8 @@ import java.util.Arrays;
 
 /**
  * Class to use a {@link PrintStream} to output the data being received
- * by an {@link InputStream}. A typical usage pattern is:
+ * by an {@link InputStream}. A typical usage pattern (with the thread being
+ * created internally to the instance) is:
  * 
  * <pre>
  *  Process process = processBuilder.start();
@@ -35,6 +36,25 @@ import java.util.Arrays;
  *  errPrinter.start();
  *  outPrinter.start();
  *  int status = process.waitFor();
+ *  errPrinter.join();
+ *  outPrinter.join();
+ * </pre>
+ *
+ * Alternatively, the thread can be created externally (for example to create
+ * the thread with non-default options, or to operate on the thread with methods
+ * other than {@link Thread#start()} and {@link Thread#join()}):
+ * 
+ * <pre>
+ *  Process process = processBuilder.start();
+ *  StreamPrinter errPrinter = new StreamPrinter(process.getErrorStream(), System.err);
+ *  StreamPrinter outPrinter = new StreamPrinter(process.getInputStream(), System.out);
+ *  Thread errThread = new Thread(errPrinter);
+ *  Thread outThread = new Thread(outPrinter);
+ *  errThread.start();
+ *  outThread.start();
+ *  int status = process.waitFor();
+ *  errThread.join();
+ *  outThread.join();
  * </pre>
  *
  * <p>The code to handle the stream data line-by-line has been adapted from a
@@ -54,13 +74,15 @@ import java.util.Arrays;
  * @author pkeller
  *
  */
-public class StreamPrinter extends Thread {
+public class StreamPrinter implements Runnable {
     private InputStream is;
     private Writer outputWriter = null;
     private File outputFile;
     private boolean append;
     private String header;
     final private int cbufSize, delay;
+    
+    private Thread thread = null;
     
     // FIXME! Specify charset for both line-by-line and buffered handling
     // via a system property.
@@ -270,6 +292,8 @@ public class StreamPrinter extends Thread {
      * 
      * Unfortunately, Process/ProcessBuilder don't provide NIO access to stdout/stderr, so
      * we have to resort to some low-level trickery.
+     * TODO: maybe this suggestion has the answer:
+     * https://stackoverflow.com/a/1033795/1866402
      */
     private void pipeWithBuffer(InputStream is, Writer fileWriter) throws IOException {
 
@@ -460,5 +484,38 @@ public class StreamPrinter extends Thread {
                     + "capture the last line of output");
         return this.lastLine;
     }
-    
+
+    /**
+     * Creates a new thread for this instance, and starts it. The thread
+     * is created with {@code new Thread(this)}.
+     * 
+     * @throws IllegalStateException if this method has been previously invoked
+     * on this instance.
+     */
+    public void start() {
+        if ( this.thread != null )
+            throw new IllegalStateException("BUG: You have called start() more than once!");
+        this.thread = new Thread(this);
+        
+        this.thread.start();
+    }
+
+    /**
+     * Calls {@link Thread#join()} on the thread that was created with the
+     * {@link #start()} instance.
+     * 
+     * @throws IllegalStateException if {@link #start()} has not been previously
+     * invoked on this instance, or the thread is in a {@link Thread.State#NEW}
+     * state.
+     * @throws InterruptedException
+     */
+    public void join() throws InterruptedException {
+        Thread.State state = this.thread == null ? null : this.thread.getState();
+        if ( state == null || state == Thread.State.NEW )
+            throw new IllegalStateException("BUG: No started thread associated with this StreamPrinter: "
+                    + "have you forgotten to call start()?");
+        
+        this.thread.join();
+    }
+
 }
