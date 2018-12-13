@@ -176,7 +176,7 @@ public interface ApplicationSpec extends PropertyDefinition {
             if ( ! this.isValid(false) ) {
                 logger.severe(String.format("Property %s has failed validation: "
                         + "cannot use application.\n"
-                        + "See previous error message(s) from this logger", this.propName) );
+                        + "See previous error message(s) from this logger", this.getPropName()) );
                 logger.info("Please consider calling isValid() sooner!"); 
                 throw new RuntimeException("Invalid specification for application " + this.appName);
             }
@@ -208,7 +208,7 @@ public interface ApplicationSpec extends PropertyDefinition {
                     this.valid = false;
                     logger.severe(String.format("Application %s has been disabled, but it is required in this context. "
                             + "Check the setting of property %s",
-                            this.appName, this.propName));
+                            this.appName, this.getPropName()));
                 }
                 else
                     this.valid = true;
@@ -223,7 +223,7 @@ public interface ApplicationSpec extends PropertyDefinition {
             if ( !this.path.isAbsolute() ) {
                 if ( ! this.binDirProperty.isValid(true) ) {
                     logger.severe(String.format("Directory property %s required here but invalid: property %s is also invalid",
-                            this.binDirProperty.getPropName(), this.propName) );
+                            this.binDirProperty.getPropName(), this.getPropName()) );
                     this.valid = false;
                     return;
                 }
@@ -235,7 +235,7 @@ public interface ApplicationSpec extends PropertyDefinition {
                 if ( dir == null || !dir.isAbsolute() ) {
                     logger.severe( String.format("Neither property %s nor property %s are set to an absolute path: "
                             + "application %s is not available",
-                            this.propName, this.binDirProperty.getPropName(), this.defaultValue));
+                            this.getPropName(), this.binDirProperty.getPropName(), this.defaultValue));
                     logger.info( String.format("The values set are '%s' and '%s' respectively",
                             Objects.toString(value, "<null>"), Objects.toString(dirStr, "<null>") ) );
                     this.valid = false;
@@ -251,7 +251,7 @@ public interface ApplicationSpec extends PropertyDefinition {
                 this.valid = Files.isExecutable(this.path);
                 if ( ! this.valid )
                     logger.severe( String.format("File %s defined by property %s is not executable",
-                            this.path, this.propName));
+                            this.path, this.getPropName()));
             }
             
             // Finally, check that the licencing directory, if applicable, is valid

@@ -40,7 +40,8 @@ import java.util.logging.Logger;
 public interface PropertyDefinition {
 
     default String getPropName() {
-        return State.getState(this).propName;
+        State state = State.getState(this);
+        return state.namespace + state.basename;
     }
     
     default String getDefaultValue() {
@@ -160,10 +161,13 @@ public interface PropertyDefinition {
         private static Logger logger = Logger.getLogger(State.class.getEnclosingClass().getName());
         
         private static final Map<PropertyDefinition, State> map = new HashMap<>();
+        // Map internal namespace ids to their true prefixes
+        private static final Map<String, String> nsPrefixMap = new HashMap<>();
 
         private static Properties properties = null;
         
-        protected final String propName;
+        protected final String basename;
+        protected final String namespace;
         protected final String description;
         protected final String defaultValue;
         protected final int minArgs, maxArgs;
@@ -237,7 +241,8 @@ public interface PropertyDefinition {
             if ( myName.isEmpty() )
                 throw new IllegalArgumentException("BUG: a property name cannot be an empty string");
 
-            this.propName = myNs + myName;            
+            this.namespace = myNs;
+            this.basename = myName;
             this.defaultValue = defaultValue;
             
             if ( minArgs < 0 || maxArgs < 0 || maxArgs < minArgs ) 
@@ -250,6 +255,20 @@ public interface PropertyDefinition {
             this.description = description;
             this.property = property;
             this.validator = validator;
+        }
+        
+        protected static void registerNsPrefix(String id, String prefix) {
+            String oldPrefix = State.nsPrefixMap.putIfAbsent(id, prefix);
+            
+            if ( oldPrefix != null ) {
+                if ( prefix.equals(oldPrefix) )
+                    logger.warning( "Multiple attempts to map the property namespace prefix '" + prefix +
+                            "': check what is going on");
+                else
+                    throw new IllegalStateException("BUG: attempt to re-map a property namespace id from '" +
+                            oldPrefix + "' to '" + prefix + "'");
+            }
+            
         }
         
         protected static State getState(PropertyDefinition key) {
@@ -270,10 +289,16 @@ public interface PropertyDefinition {
             return State.properties == null ? System.getProperty(key) : State.properties.getProperty(key);
         }
         
+        protected String getPropName() {
+            String nsPrefix = State.nsPrefixMap.get(this.namespace);
+            return ( nsPrefix != null ? nsPrefix : this.namespace ) + 
+                    this.basename;
+        }
+        
         protected String getUnvalidatedPropValue() {
             String val =  State.properties == null ?
-                    System.getProperty(this.propName, this.defaultValue) :
-                        State.properties.getProperty(this.propName, this.defaultValue);
+                    System.getProperty(this.getPropName(), this.defaultValue) :
+                        State.properties.getProperty(this.getPropName(), this.defaultValue);
             return val == null ? null : val.trim();
         }
         
@@ -281,9 +306,9 @@ public interface PropertyDefinition {
             
             if ( ! this.isValid(false) ) {
                 logger.severe(String.format("Property %s has failed validation\n" +
-                        "See previous error message(s) from this logger", this.propName));
+                        "See previous error message(s) from this logger", this.getPropName()));
                 logger.info("Please consider calling isValid() sooner!");
-                throw new RuntimeException("Invalid value for property " + this.propName);
+                throw new RuntimeException("Invalid value for property " + this.getPropName());
             }
             
             return this.getUnvalidatedPropValue();
@@ -299,18 +324,18 @@ public interface PropertyDefinition {
                 
                 if ( required ) {
                     if ( this.maxArgs == 0 )
-                        throw new RuntimeException("BUG: called isValid(true) for " + this.propName + 
+                        throw new RuntimeException("BUG: called isValid(true) for " + this.getPropName() + 
                                 " which has maxArgs==0. This makes no sense!");
                     else if ( val == null )
                         logger.severe(String.format("Property %s has not been assigned, but it "
-                                + "is a required property for this application", this.propName));
+                                + "is a required property for this application", this.getPropName()));
                 }
                 
                 // For a required property, the number of arguments must always be within the specified range
                 // For an optional property, the number of arguments must be within the range if any have been assigned
                 if ( (required || val != null) && (nArgs < this.minArgs || nArgs > this.maxArgs) )
                     logger.severe(String.format("Property %s has %d arguments: should have a minimum of "
-                            + "%d and a maximum of %d", this.propName, nArgs, this.minArgs, this.maxArgs));
+                            + "%d and a maximum of %d", this.getPropName(), nArgs, this.minArgs, this.maxArgs));
                 
                 if ( this.validator != null ) {
 
@@ -324,7 +349,7 @@ public interface PropertyDefinition {
                             
                             logger.logp(Level.SEVERE, this.getClass().getName(), "isValid",
                                     String.format("Value '%s' assigned to property %s has "
-                                            + "failed validation", arg, this.propName),
+                                            + "failed validation", arg, this.getPropName()),
                                     t);
                         }
                 }
