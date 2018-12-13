@@ -98,15 +98,15 @@ public interface ApplicationSpec extends PropertyDefinition {
     }
     
     /**
-     * Get the basename of the name of the property used to define the location or name
-     * of the application executable file. This is used as a "logical" application name,
-     * and is incorporated into the names of various directories and files that are
-     * handled by the workflow.
+     * Get the logical name of the application. This name is used in the names of
+     * other {@link PropertyDefinition properties} that are used to control the
+     * execution of the application, and is incorporated into the names of various
+     * directories and files that are handled by the workflow.
      * 
-     * @return basename of the property name
+     * @return logical name of the application
      */
-    default String getBasename() {
-        return State.getState(this).basename;
+    default String getAppName() {
+        return State.getState(this).appName;
     }
     
     static class State extends PropertyDefinition.State {
@@ -116,7 +116,7 @@ public interface ApplicationSpec extends PropertyDefinition {
         
         private final PropertyDefinition binDirProperty;
         private final PropertyDefinition defaultLicDirProperty;
-        private final String basename;
+        private final String appName;
         
         private Boolean valid = null;
         private Path path = null;
@@ -136,15 +136,15 @@ public interface ApplicationSpec extends PropertyDefinition {
             
         }
         
-        private State(ApplicationSpec spec, String namespace, String basename, String defaultValue,
+        private State(ApplicationSpec spec, String namespace, String appName, String defaultValue,
                 PropertyDefinition binDirProperty, PropertyDefinition licDirProperty) {
             
             // We don't need to set the description in the state here.
-            super(spec, namespace, basename + "." + BINSUFFIX, 
+            super(spec, namespace, appName + "." + BINSUFFIX, 
                     Objects.requireNonNull(defaultValue, "BUG: A WorkflowApplicationSpec must have a default value set"),
                     0, 1, "", null);
             
-            this.basename = basename;
+            this.appName = appName;
             
             if ( this.defaultValue.isEmpty() )
                 throw new IllegalArgumentException("BUG: A WorkflowApplicationSpec cannot have an empty default value");
@@ -178,7 +178,7 @@ public interface ApplicationSpec extends PropertyDefinition {
                         + "cannot use application.\n"
                         + "See previous error message(s) from this logger", this.propName) );
                 logger.info("Please consider calling isValid() sooner!"); 
-                throw new RuntimeException("Invalid specification for application " + this.basename);
+                throw new RuntimeException("Invalid specification for application " + this.appName);
             }
             
             return this.path;
@@ -208,7 +208,7 @@ public interface ApplicationSpec extends PropertyDefinition {
                     this.valid = false;
                     logger.severe(String.format("Application %s has been disabled, but it is required in this context. "
                             + "Check the setting of property %s",
-                            this.basename, this.propName));
+                            this.appName, this.propName));
                 }
                 else
                     this.valid = true;
