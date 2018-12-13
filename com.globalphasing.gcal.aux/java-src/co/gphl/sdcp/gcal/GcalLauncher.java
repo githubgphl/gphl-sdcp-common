@@ -27,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import co.gphl.common.properties.ApplicationSpec;
+import co.gphl.common.properties.GeneralProperty;
 import co.gphl.common.threads.ProcessLauncher;
 import co.gphl.common.threads.TerminationException;
 
@@ -260,6 +261,7 @@ public abstract class GcalLauncher {
         String propName, propVal, propArg, oldPropVal;
         Map<String, String> paramSet;
         
+        // First, specific properties that have been assigned particular functions
         for ( Entry<String, String> e: this.getPropNames().entrySet() ) {
 
             propName = this.propNamePrefix + e.getKey();
@@ -296,6 +298,24 @@ public abstract class GcalLauncher {
         if ( licencingDir != null )
             this.env.put("BDG_home", licencingDir.toString());
         
+        
+        // Extract environment variables and command-line options using the more general developer-only
+        // mechanism of SDCP-238
+        if ( GeneralProperty.DEVMODE.getPropBoolValue() ) {
+            for ( String pn: new String[]{ GcalLauncher.propNamePrefix(this.globalPropNamePrefix, "all"),
+                    this.propNamePrefix } ) {
+                String envNamePrefix = pn + "env.";
+                this.properties.stringPropertyNames().stream()
+                .filter( n -> n.startsWith(envNamePrefix) )
+                .forEach( e -> this.env.put(e.substring(envNamePrefix.length()), this.properties.getProperty(e)) );
+
+                String optNamePrefix = pn + "opt.";
+                this.properties.stringPropertyNames().stream()
+                .filter( n -> n.startsWith(optNamePrefix) )
+                .forEach( o -> this.args.put(o.substring(optNamePrefix.length()), this.properties.getProperty(o)) );
+            }
+
+        }
     }
 
     private static String regulariseNamespace(String namespace) {
